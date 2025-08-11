@@ -1,0 +1,97 @@
+# Overview
+
+This is a comprehensive Box Management System - a web application for organizing and tracking physical storage boxes and their contents. The system enables users to catalog boxes, manage items within them, upload receipts, generate QR codes for easy access, and perform advanced search and export operations. The application is built as a full-stack solution with a React frontend and Express.js backend, designed to help users efficiently organize and track their physical storage.
+
+# User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+# System Architecture
+
+## Frontend Architecture
+The frontend is built using **React 18** with modern functional components and hooks, styled with **Tailwind CSS** for responsive design. The application uses **Vite** as the build tool for fast development and optimized production builds.
+
+**Key Frontend Decisions:**
+- **React Router (Wouter)** for lightweight client-side routing
+- **TanStack React Query** for efficient server state management and caching
+- **Radix UI** components for accessible, unstyled UI primitives
+- **Shadcn/ui** component library built on top of Radix for consistent design system
+- **React Hook Form** with **Zod** validation for type-safe form handling
+- **TypeScript** throughout for type safety and better developer experience
+
+## Backend Architecture
+The backend is an **Express.js** server with TypeScript, implementing a RESTful API pattern. The server handles file uploads, database operations, and serves the built frontend in production.
+
+**Key Backend Decisions:**
+- **In-memory storage** with sample data for development (configurable for database integration)
+- **Multer** middleware for handling file uploads (receipts)
+- **Drizzle ORM** with SQLite configuration for future database persistence
+- **Zod schemas** shared between frontend and backend for consistent validation
+- **Express middleware** for logging, error handling, and CORS
+
+## Data Storage Solutions
+Currently uses **in-memory storage** with sample data for immediate functionality. The system is architected to easily transition to persistent storage:
+
+- **Drizzle ORM** configured for PostgreSQL/SQLite
+- **Schema definitions** in shared TypeScript files
+- **Database migrations** ready via Drizzle Kit
+- **Connection to Neon Database** (serverless PostgreSQL) configured
+
+**Data Model:**
+- **Boxes**: ID, name, location, description, timestamps
+- **Items**: ID, box reference, name, quantity, details, value, receipt filename, timestamps
+- **Relationships**: One-to-many (Box → Items) with cascade delete
+
+## Design Patterns and Architecture
+- **Monorepo structure** with shared schemas between client and server
+- **Type-safe API** with shared TypeScript interfaces
+- **Component composition** using Radix UI primitives
+- **Custom hooks** for business logic abstraction
+- **Query invalidation** patterns for optimistic updates
+- **Error boundaries** and comprehensive error handling
+- **Responsive design** with mobile-first approach
+
+# External Dependencies
+
+## Core Framework Dependencies
+- **React 18+** - Frontend framework with hooks and functional components
+- **Express.js** - Backend web server framework
+- **TypeScript** - Type safety across the entire application
+- **Vite** - Build tool and development server
+- **Node.js** - Runtime environment
+
+## Database and ORM
+- **Drizzle ORM** - Type-safe database ORM with migration support
+- **Drizzle Kit** - Database migration and schema management
+- **@neondatabase/serverless** - Serverless PostgreSQL client
+- **SQLite** - Configured as alternative database option
+
+## UI and Styling
+- **Tailwind CSS** - Utility-first CSS framework
+- **Radix UI** - Unstyled, accessible UI component library
+- **Lucide React** - Icon library for consistent iconography
+- **Class Variance Authority** - Utility for creating variant-based component APIs
+
+## Form Handling and Validation
+- **React Hook Form** - Performant form library with minimal re-renders
+- **Zod** - TypeScript-first schema validation
+- **@hookform/resolvers** - Validation resolvers for React Hook Form
+
+## File Upload and Storage
+- **Multer** - Express middleware for handling multipart/form-data
+- **File system** - Local file storage for receipt uploads
+
+## State Management and Caching
+- **TanStack React Query** - Server state management and caching
+- **React Context** - Client-side state for UI components
+
+## Development and Build Tools
+- **ESBuild** - Fast JavaScript bundler for production builds
+- **TSX** - TypeScript execution environment for development
+- **PostCSS** - CSS post-processing with Tailwind integration
+
+## Planned/Configured External Services
+- **QR Code generation** - For box identification and mobile access
+- **PDF export** - For generating printable box contents
+- **CSV export** - For data portability
+- **Camera integration** - For QR code scanning functionality
