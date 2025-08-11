@@ -33,8 +33,6 @@ RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/client/dist ./client/dist
-COPY --from=builder --chown=nodejs:nodejs /app/shared ./shared
 
 # Create directories for persistent data
 RUN mkdir -p /app/data /app/uploads/receipts && \

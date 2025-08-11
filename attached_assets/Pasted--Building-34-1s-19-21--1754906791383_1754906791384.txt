@@ -1,0 +1,38 @@
+[+] Building 34.1s (19/21)                                                                                                                              docker:desktop-linux
+ => [internal] load build definition from Dockerfile                                                                                                                    0.1s
+ => => transferring dockerfile: 1.40kB                                                                                                                                  0.0s
+ => [internal] load metadata for docker.io/library/node:20-alpine                                                                                                       1.8s
+ => [auth] library/node:pull token for registry-1.docker.io                                                                                                             0.0s
+ => [internal] load .dockerignore                                                                                                                                       0.1s
+ => => transferring context: 249B                                                                                                                                       0.0s
+ => CACHED [builder 1/6] FROM docker.io/library/node:20-alpine@sha256:df02558528d3d3d0d621f112e232611aecfee7cbc654f6b375765f72bb262799                                  0.0s
+ => => resolve docker.io/library/node:20-alpine@sha256:df02558528d3d3d0d621f112e232611aecfee7cbc654f6b375765f72bb262799                                                 0.0s
+ => [internal] load build context                                                                                                                                       0.3s
+ => => transferring context: 657.34kB                                                                                                                                   0.3s
+ => CACHED [builder 2/6] WORKDIR /app                                                                                                                                   0.0s
+ => [stage-1  2/11] RUN apk add --no-cache sqlite python3 make g++                                                                                                      9.3s
+ => [builder 3/6] COPY package*.json ./                                                                                                                                 0.1s
+ => [builder 4/6] RUN npm ci                                                                                                                                           20.4s
+ => [stage-1  3/11] RUN addgroup -g 1001 -S nodejs                                                                                                                      0.5s
+ => [stage-1  4/11] RUN adduser -S nodejs -u 1001                                                                                                                       0.6s
+ => [stage-1  5/11] WORKDIR /app                                                                                                                                        0.1s
+ => [stage-1  6/11] COPY package*.json ./                                                                                                                               0.1s
+ => [stage-1  7/11] RUN npm ci --only=production && npm cache clean --force                                                                                            16.0s
+ => [builder 5/6] COPY . .                                                                                                                                              0.5s
+ => [builder 6/6] RUN npm run build                                                                                                                                     9.3s
+ => CACHED [stage-1  8/11] COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist                                                                                   0.0s
+ => ERROR [stage-1  9/11] COPY --from=builder --chown=nodejs:nodejs /app/client/dist ./client/dist                                                                      0.0s
+------
+ > [stage-1  9/11] COPY --from=builder --chown=nodejs:nodejs /app/client/dist ./client/dist:
+------
+Dockerfile:36
+--------------------
+  34 |     # Copy built application from builder stage
+  35 |     COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+  36 | >>> COPY --from=builder --chown=nodejs:nodejs /app/client/dist ./client/dist
+  37 |     COPY --from=builder --chown=nodejs:nodejs /app/shared ./shared
+  38 |
+--------------------
+ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref twj0rrbehsipasf1y60gl3jdh::lwmybwqa0ez8xlbiaiz1jaatf: "/app/client/dist": not found
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/q5a8trud9w8ojky9o2e7sv392
