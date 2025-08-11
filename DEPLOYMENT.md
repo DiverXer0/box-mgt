@@ -1,14 +1,15 @@
 # Box Management System - NAS Container Station Deployment Guide
 
-## ✅ Docker Build Test Results
+## ✅ Docker Build Test Results - FIXED
 
 **Build Process Verified:**
 - ✅ `npm run build` successfully creates optimized production files
 - ✅ Frontend builds to `dist/public/` (985 bytes index.html + assets)
-- ✅ Backend builds to `dist/index.js` (22.1KB bundled)
+- ✅ Backend builds to `dist/index.js` (22.6KB bundled)
 - ✅ Production server starts and responds correctly
 - ✅ SQLite database persistence works in production mode
 - ✅ API endpoints return data: `{"totalBoxes":3,"totalItems":6,"totalValue":1451.79,"itemsWithReceipts":3}`
+- ✅ **FIXED**: Vite dependency issue resolved - production build no longer imports development dependencies
 
 ## Container Station Deployment
 
