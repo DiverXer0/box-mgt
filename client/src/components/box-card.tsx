@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { MapPin, Package, DollarSign, QrCode, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import QRCodeModal from "./qr-code-modal";
-import AddBoxModal from "./add-box-modal";
+import QRCodeModal from "@/components/qr-code-modal";
+import AddBoxModal from "@/components/add-box-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { type BoxWithStats } from "@shared/schema";
@@ -164,7 +164,7 @@ export default function BoxCard({ box }: BoxCardProps) {
               </span>
             </div>
             <span className="text-gray-400 text-xs" data-testid={`text-last-updated-${box.id}`}>
-              {formatDate(box.createdAt)}
+              {formatDate(box.createdAt || undefined)}
             </span>
           </div>
           

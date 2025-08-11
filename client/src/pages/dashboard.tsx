@@ -19,7 +19,7 @@ export default function Dashboard() {
     queryKey: ["/api/boxes"],
   });
 
-  const { data: searchResults } = useQuery({
+  const { data: searchResults } = useQuery<{ boxes: BoxWithStats[]; items: any[] }>({
     queryKey: ["/api/search", { q: searchQuery }],
     enabled: searchQuery.length > 0,
   });

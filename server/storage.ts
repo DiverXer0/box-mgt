@@ -204,6 +204,8 @@ export class MemStorage implements IStorage {
     const item: Item = {
       ...insertItem,
       id,
+      value: insertItem.value ?? null,
+      receiptFilename: insertItem.receiptFilename ?? null,
       createdAt: new Date().toISOString(),
     };
     this.items.set(id, item);
