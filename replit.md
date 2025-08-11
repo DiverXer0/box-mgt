@@ -5,17 +5,19 @@ This is a comprehensive Box Management System - a web application for organizing
 ## Current Status (August 11, 2025)
 ✅ **COMPLETE & FUNCTIONAL** - All core features implemented and working:
 - Full-stack application with React frontend and Express backend running on port 5000
+- **SQLite database persistence** - Data survives container restarts for NAS deployment
 - Box and item management with complete CRUD operations
 - QR code generation and display functionality
 - File upload system for receipt attachments (PDF, JPG, PNG, GIF)
 - PDF/CSV export capabilities for box contents
 - Global search functionality across boxes and items
 - Statistics dashboard showing totals and metrics
-- Sample data pre-loaded (Kitchen Storage, Garage Tools, Office Supplies boxes)
+- Sample data automatically loaded on first run (Kitchen Storage, Garage Tools, Office Supplies boxes)
 - Responsive design with mobile-first approach
 - Complete UI component library with shadcn/ui components
 - Error handling and user feedback with toast notifications
 - TypeScript throughout for type safety
+- **Docker containerization** ready for Container Station deployment
 
 # User Preferences
 
@@ -45,12 +47,13 @@ The backend is an **Express.js** server with TypeScript, implementing a RESTful 
 - **Express middleware** for logging, error handling, and CORS
 
 ## Data Storage Solutions
-Currently uses **in-memory storage** with sample data for immediate functionality. The system is architected to easily transition to persistent storage:
+Uses **SQLite database persistence** with automatic sample data initialization for NAS deployment:
 
-- **Drizzle ORM** configured for PostgreSQL/SQLite
-- **Schema definitions** in shared TypeScript files
-- **Database migrations** ready via Drizzle Kit
-- **Connection to Neon Database** (serverless PostgreSQL) configured
+- **SQLite database** stored in `/data/boxes.db` for persistent storage
+- **Drizzle ORM** with better-sqlite3 driver for high performance
+- **Schema definitions** in shared TypeScript files with proper relations
+- **Automatic table creation** and sample data initialization on first run
+- **Volume mounting** configured for Container Station deployment
 
 **Data Model:**
 - **Boxes**: ID, name, location, description, timestamps

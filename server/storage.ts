@@ -1,5 +1,7 @@
-import { type Box, type Item, type InsertBox, type InsertItem, type BoxWithStats, type BoxWithItems } from "@shared/schema";
+import { type Box, type Item, type InsertBox, type InsertItem, type BoxWithStats, type BoxWithItems, boxes, items } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db, initializeDatabase } from "./db";
+import { eq, like, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Box operations
@@ -28,133 +30,125 @@ export interface IStorage {
   }>;
 }
 
-export class MemStorage implements IStorage {
-  private boxes: Map<string, Box>;
-  private items: Map<string, Item>;
-
+export class DatabaseStorage implements IStorage {
   constructor() {
-    this.boxes = new Map();
-    this.items = new Map();
+    initializeDatabase();
     this.initializeSampleData();
   }
 
-  private initializeSampleData() {
+  private async initializeSampleData() {
+    // Check if we already have data
+    const existingBoxes = await db.select().from(boxes).limit(1);
+    if (existingBoxes.length > 0) {
+      return; // Sample data already exists
+    }
+
+    console.log('Initializing sample data...');
+    
     // Create sample boxes
-    const box1: Box = {
-      id: "box-kitchen-storage",
-      name: "Kitchen Storage",
-      location: "Basement Shelf A-1",
-      description: "Kitchen appliances and utensils stored for seasonal use. Includes stand mixer, food processor, and specialty cookware.",
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-    };
+    const sampleBoxes = [
+      {
+        id: "box-kitchen-storage",
+        name: "Kitchen Storage",
+        location: "Basement Shelf A-1",
+        description: "Kitchen appliances and utensils stored for seasonal use. Includes stand mixer, food processor, and specialty cookware.",
+      },
+      {
+        id: "box-garage-tools",
+        name: "Garage Tools", 
+        location: "Garage Wall Mount",
+        description: "Hand tools and hardware for home maintenance and DIY projects. Includes screwdrivers, wrenches, drill bits.",
+      },
+      {
+        id: "box-office-supplies",
+        name: "Office Supplies",
+        location: "Closet Top Shelf", 
+        description: "Stationery, printer supplies, and office equipment. Includes paper, pens, staplers, and backup cables.",
+      }
+    ];
 
-    const box2: Box = {
-      id: "box-garage-tools",
-      name: "Garage Tools", 
-      location: "Garage Wall Mount",
-      description: "Hand tools and hardware for home maintenance and DIY projects. Includes screwdrivers, wrenches, drill bits.",
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
-    };
-
-    const box3: Box = {
-      id: "box-office-supplies",
-      name: "Office Supplies",
-      location: "Closet Top Shelf", 
-      description: "Stationery, printer supplies, and office equipment. Includes paper, pens, staplers, and backup cables.",
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
-    };
-
-    this.boxes.set(box1.id, box1);
-    this.boxes.set(box2.id, box2);
-    this.boxes.set(box3.id, box3);
+    await db.insert(boxes).values(sampleBoxes);
 
     // Create sample items
-    const items: Item[] = [
-      // Kitchen Storage items
+    const sampleItems = [
       {
         id: "item-stand-mixer",
-        boxId: box1.id,
+        boxId: "box-kitchen-storage",
         name: "KitchenAid Stand Mixer",
         quantity: 1,
         details: "Professional 5-quart bowl-lift mixer with attachments",
         value: 349.99,
         receiptFilename: "mixer-receipt.pdf",
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
       },
       {
         id: "item-utensil-set",
-        boxId: box1.id,
+        boxId: "box-kitchen-storage",
         name: "Stainless Steel Utensil Set",
         quantity: 1,
         details: "12-piece professional kitchen utensil set with holder",
         value: 89.99,
         receiptFilename: null,
-        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
       },
       {
         id: "item-food-processor",
-        boxId: box1.id,
+        boxId: "box-kitchen-storage",
         name: "Food Processor",
         quantity: 1,
         details: "Cuisinart 14-cup food processor with multiple blades",
         value: 199.99,
         receiptFilename: "processor-receipt.jpg",
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
       },
-
-      // Garage Tools items
       {
         id: "item-power-drill",
-        boxId: box2.id,
+        boxId: "box-garage-tools",
         name: "Cordless Power Drill",
         quantity: 1,
         details: "18V lithium-ion drill with battery and charger",
         value: 129.99,
         receiptFilename: "drill-receipt.pdf",
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
       },
       {
         id: "item-wrench-set",
-        boxId: box2.id,
+        boxId: "box-garage-tools",
         name: "Wrench Set",
         quantity: 12,
         details: "Metric and SAE combination wrench set 8mm-19mm",
         value: 45.99,
         receiptFilename: null,
-        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
       },
-
-      // Office Supplies items  
       {
         id: "item-printer-paper",
-        boxId: box3.id,
+        boxId: "box-office-supplies",
         name: "Printer Paper",
         quantity: 5,
         details: "20lb white copy paper, 500 sheets per ream",
         value: 25.99,
         receiptFilename: null,
-        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
       },
     ];
 
-    items.forEach(item => this.items.set(item.id, item));
+    await db.insert(items).values(sampleItems);
+    console.log('Sample data initialized successfully');
   }
 
   async getBoxes(): Promise<BoxWithStats[]> {
-    const boxesArray = Array.from(this.boxes.values());
-    return boxesArray.map(box => this.addBoxStats(box));
+    const allBoxes = await db.select().from(boxes);
+    const boxesWithStats = await Promise.all(
+      allBoxes.map(async (box) => this.addBoxStats(box))
+    );
+    return boxesWithStats;
   }
 
   async getBox(id: string): Promise<BoxWithItems | undefined> {
-    const box = this.boxes.get(id);
-    if (!box) return undefined;
+    const box = await db.select().from(boxes).where(eq(boxes.id, id)).limit(1);
+    if (box.length === 0) return undefined;
 
-    const items = Array.from(this.items.values()).filter(item => item.boxId === id);
-    const boxWithStats = this.addBoxStats(box);
+    const boxItems = await db.select().from(items).where(eq(items.boxId, id));
+    const boxWithStats = await this.addBoxStats(box[0]);
     
     return {
       ...boxWithStats,
-      items,
+      items: boxItems,
     };
   }
 
@@ -165,38 +159,28 @@ export class MemStorage implements IStorage {
       id,
       createdAt: new Date().toISOString(),
     };
-    this.boxes.set(id, box);
+    await db.insert(boxes).values(box);
     return box;
   }
 
   async updateBox(id: string, updateData: Partial<InsertBox>): Promise<Box | undefined> {
-    const box = this.boxes.get(id);
-    if (!box) return undefined;
-
-    const updatedBox = { ...box, ...updateData };
-    this.boxes.set(id, updatedBox);
-    return updatedBox;
+    await db.update(boxes).set(updateData).where(eq(boxes.id, id));
+    const updated = await db.select().from(boxes).where(eq(boxes.id, id)).limit(1);
+    return updated[0] || undefined;
   }
 
   async deleteBox(id: string): Promise<boolean> {
-    const deleted = this.boxes.delete(id);
-    if (deleted) {
-      // Delete all items in this box
-      const itemsToDelete = Array.from(this.items.entries())
-        .filter(([, item]) => item.boxId === id)
-        .map(([itemId]) => itemId);
-      
-      itemsToDelete.forEach(itemId => this.items.delete(itemId));
-    }
-    return deleted;
+    const result = await db.delete(boxes).where(eq(boxes.id, id));
+    return result.changes > 0;
   }
 
   async getBoxItems(boxId: string): Promise<Item[]> {
-    return Array.from(this.items.values()).filter(item => item.boxId === boxId);
+    return await db.select().from(items).where(eq(items.boxId, boxId));
   }
 
   async getItem(id: string): Promise<Item | undefined> {
-    return this.items.get(id);
+    const item = await db.select().from(items).where(eq(items.id, id)).limit(1);
+    return item[0] || undefined;
   }
 
   async createItem(insertItem: InsertItem): Promise<Item> {
@@ -208,41 +192,44 @@ export class MemStorage implements IStorage {
       receiptFilename: insertItem.receiptFilename ?? null,
       createdAt: new Date().toISOString(),
     };
-    this.items.set(id, item);
+    await db.insert(items).values(item);
     return item;
   }
 
   async updateItem(id: string, updateData: Partial<InsertItem>): Promise<Item | undefined> {
-    const item = this.items.get(id);
-    if (!item) return undefined;
-
-    const updatedItem = { ...item, ...updateData };
-    this.items.set(id, updatedItem);
-    return updatedItem;
+    await db.update(items).set(updateData).where(eq(items.id, id));
+    const updated = await db.select().from(items).where(eq(items.id, id)).limit(1);
+    return updated[0] || undefined;
   }
 
   async deleteItem(id: string): Promise<boolean> {
-    return this.items.delete(id);
+    const result = await db.delete(items).where(eq(items.id, id));
+    return result.changes > 0;
   }
 
   async searchBoxesAndItems(query: string): Promise<{ boxes: BoxWithStats[]; items: Item[] }> {
-    const lowerQuery = query.toLowerCase();
+    const searchPattern = `%${query}%`;
     
-    const boxes = Array.from(this.boxes.values())
-      .filter(box => 
-        box.name.toLowerCase().includes(lowerQuery) ||
-        box.location.toLowerCase().includes(lowerQuery) ||
-        box.description.toLowerCase().includes(lowerQuery)
+    const searchBoxes = await db.select().from(boxes).where(
+      or(
+        like(boxes.name, searchPattern),
+        like(boxes.location, searchPattern),
+        like(boxes.description, searchPattern)
       )
-      .map(box => this.addBoxStats(box));
+    );
 
-    const items = Array.from(this.items.values())
-      .filter(item =>
-        item.name.toLowerCase().includes(lowerQuery) ||
-        item.details.toLowerCase().includes(lowerQuery)
-      );
+    const searchItems = await db.select().from(items).where(
+      or(
+        like(items.name, searchPattern),
+        like(items.details, searchPattern)
+      )
+    );
 
-    return { boxes, items };
+    const boxesWithStats = await Promise.all(
+      searchBoxes.map(async (box) => this.addBoxStats(box))
+    );
+
+    return { boxes: boxesWithStats, items: searchItems };
   }
 
   async getStats(): Promise<{
@@ -251,22 +238,25 @@ export class MemStorage implements IStorage {
     totalValue: number;
     itemsWithReceipts: number;
   }> {
-    const totalBoxes = this.boxes.size;
-    const allItems = Array.from(this.items.values());
-    const totalItems = allItems.length;
-    const totalValue = allItems.reduce((sum, item) => sum + ((item.value || 0) * item.quantity), 0);
-    const itemsWithReceipts = allItems.filter(item => item.receiptFilename).length;
+    const [boxCount] = await db.select({ count: sql<number>`count(*)` }).from(boxes);
+    const [itemCount] = await db.select({ count: sql<number>`count(*)` }).from(items);
+    const [valueSum] = await db.select({ 
+      total: sql<number>`coalesce(sum(value * quantity), 0)` 
+    }).from(items);
+    const [receiptCount] = await db.select({ 
+      count: sql<number>`count(*)` 
+    }).from(items).where(sql`receipt_filename IS NOT NULL`);
 
     return {
-      totalBoxes,
-      totalItems,
-      totalValue,
-      itemsWithReceipts,
+      totalBoxes: boxCount.count,
+      totalItems: itemCount.count,
+      totalValue: valueSum.total,
+      itemsWithReceipts: receiptCount.count,
     };
   }
 
-  private addBoxStats(box: Box): BoxWithStats {
-    const boxItems = Array.from(this.items.values()).filter(item => item.boxId === box.id);
+  private async addBoxStats(box: Box): Promise<BoxWithStats> {
+    const boxItems = await db.select().from(items).where(eq(items.boxId, box.id));
     const itemCount = boxItems.length;
     const totalValue = boxItems.reduce((sum, item) => sum + ((item.value || 0) * item.quantity), 0);
     const withReceipts = boxItems.filter(item => item.receiptFilename).length;
@@ -280,4 +270,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
