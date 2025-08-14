@@ -96,6 +96,8 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
       });
       return;
     }
+    
+    console.log('✓ Camera API available, proceeding with device enumeration...');
 
     // Check if we can enumerate devices first
     try {
@@ -373,36 +375,65 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
                   Close Scanner
                 </Button>
                 
-                <div className="text-center">
-                  <p className="text-xs text-gray-500 mb-2">Alternative: Navigate manually</p>
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      placeholder="Enter box ID (e.g., box-kitchen-storage)"
-                      className="flex-1 px-3 py-2 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          const boxId = (e.target as HTMLInputElement).value.trim();
+                <div className="text-center space-y-3">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={async () => {
+                      console.log('=== MANUAL CAMERA TEST ===');
+                      try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        console.log('✓ Camera access successful!');
+                        stream.getTracks().forEach(track => track.stop());
+                        toast({
+                          title: "Camera Test Successful",
+                          description: "Camera access is working. Try the scanner again.",
+                        });
+                      } catch (error: any) {
+                        console.error('✗ Camera test failed:', error);
+                        toast({
+                          title: "Camera Test Failed",
+                          description: `Error: ${error.name} - ${error.message}`,
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    data-testid="button-test-camera"
+                  >
+                    Test Camera Access
+                  </Button>
+                  
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">Alternative: Navigate manually</p>
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        placeholder="Enter box ID (e.g., box-kitchen-storage)"
+                        className="flex-1 px-3 py-2 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const boxId = (e.target as HTMLInputElement).value.trim();
+                            if (boxId) {
+                              window.location.href = `/box/${boxId}`;
+                            }
+                          }
+                        }}
+                        data-testid="input-manual-box-id"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          const input = e.currentTarget.parentElement?.querySelector('input');
+                          const boxId = input?.value.trim();
                           if (boxId) {
                             window.location.href = `/box/${boxId}`;
                           }
-                        }
-                      }}
-                      data-testid="input-manual-box-id"
-                    />
-                    <Button
-                      size="sm"
-                      onClick={(e) => {
-                        const input = e.currentTarget.parentElement?.querySelector('input');
-                        const boxId = input?.value.trim();
-                        if (boxId) {
-                          window.location.href = `/box/${boxId}`;
-                        }
-                      }}
-                      data-testid="button-navigate-to-box"
-                    >
-                      Go
-                    </Button>
+                        }}
+                        data-testid="button-navigate-to-box"
+                      >
+                        Go
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
