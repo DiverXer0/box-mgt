@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Printer, Camera, X } from "lucide-react";
 import { generateQRCode, downloadQRCode, printQRCode } from "@/lib/qr-utils";
@@ -19,6 +19,8 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
   const videoRef = useRef<HTMLVideoElement>(null);
   const [scanning, setScanning] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+
+  console.log('QRCodeModal rendered:', { open, mode, boxId, boxName });
 
   useEffect(() => {
     if (open && mode === "display" && boxId) {
@@ -134,6 +136,12 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
           <DialogTitle data-testid="text-qr-modal-title">
             {mode === "display" ? "Box QR Code" : "Scan QR Code"}
           </DialogTitle>
+          <DialogDescription>
+            {mode === "display" 
+              ? "Scan this QR code to quickly access this box from your mobile device"
+              : "Point your camera at a QR code to navigate to that box"
+            }
+          </DialogDescription>
         </DialogHeader>
         
         <div className="text-center">
