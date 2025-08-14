@@ -9,6 +9,7 @@
 - ✅ Production server starts without Vite dependency errors
 - ✅ SQLite database persistence works in production mode
 - ✅ API endpoints return data: `{"totalBoxes":3,"totalItems":6,"totalValue":1451.79,"itemsWithReceipts":3}`
+- ✅ **PORT 80 CONFIGURATION**: Updated to run on standard HTTP port 80 for production deployments
 - ✅ **FULLY FIXED**: Created separate production server (`server/index.prod.ts`) with Vite-free static file serving (`server/static.ts`)
 - ✅ **VERIFIED**: Production bundle contains ZERO Vite references (grep count: 0)
 - ✅ **QR CODE DISPLAY**: Fixed canvas rendering timing and accessibility issues
@@ -31,7 +32,7 @@
    ```
 
 3. **Access your application:**
-   - URL: `http://your-nas-ip:3000`
+   - URL: `http://your-nas-ip` (now runs on standard port 80)
    - Container will automatically create persistent volumes for data and uploads
 
 ### Method 2: Manual Docker Build
@@ -45,9 +46,11 @@
    ```bash
    docker run -d \
      --name box-management-system \
-     -p 3000:5000 \
+     -p 80:80 \
      -v ./data:/app/data \
      -v ./uploads:/app/uploads \
+     -e NODE_ENV=production \
+     -e PORT=80 \
      --restart unless-stopped \
      box-management:latest
    ```

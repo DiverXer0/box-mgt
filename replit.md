@@ -4,7 +4,7 @@ This is a comprehensive Box Management System - a web application for organizing
 
 ## Current Status (August 14, 2025)
 ✅ **PRODUCTION READY & DEPLOYED** - All features fully working and Container Station deployment successful:
-- Full-stack application with React frontend and Express backend running on port 5000
+- Full-stack application with React frontend and Express backend running on port 80 (standard HTTP)
 - **SQLite database persistence** - Data survives container restarts for NAS deployment
 - **Docker build tested** - Multi-stage build creates 22.1KB backend + optimized frontend
 - **Production server verified** - API responds correctly with persistent data
@@ -22,6 +22,7 @@ This is a comprehensive Box Management System - a web application for organizing
 - **Container Station deployment successful** - Vite dependency issues resolved, QR code display fixed, receipt viewing implemented
 - **User verified working** - QR code generation and receipt viewing both functioning correctly
 - **QR Scanner limitation identified** - Camera access requires HTTPS, manual navigation provided as fallback for HTTP deployments
+- **Port 80 Configuration** - Updated to run on standard HTTP port 80 for production deployments
 
 # User Preferences
 
