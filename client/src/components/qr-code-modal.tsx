@@ -98,8 +98,8 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
         });
       } else {
         toast({
-          title: "Camera Not Supported",
-          description: "This browser doesn't support camera access. Try Chrome, Firefox, or Safari on a secure connection.",
+          title: "HTTPS Required for Camera",
+          description: "Camera access requires a secure HTTPS connection. Set up SSL/TLS on your NAS or use manual navigation below.",
           variant: "destructive",
         });
       }
@@ -109,8 +109,8 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
     if (!navigator.mediaDevices.getUserMedia || typeof navigator.mediaDevices.getUserMedia !== 'function') {
       console.error('getUserMedia not available or not a function');
       toast({
-        title: "Camera Access Unavailable", 
-        description: "Camera access is not supported. Please use a modern browser with HTTPS.",
+        title: "HTTPS Required", 
+        description: "Camera access requires HTTPS. Configure SSL on your NAS or use the manual navigation option.",
         variant: "destructive",
       });
       return;
@@ -364,9 +364,9 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
                         <p className="font-medium mb-1">Camera Not Available</p>
                         <p className="text-sm mb-2">QR code scanning requires camera access</p>
                         <div className="text-xs space-y-1">
-                          <p>• Try using a mobile device</p>
-                          <p>• Use Chrome, Firefox, or Safari</p>
-                          <p>• Allow camera permissions when prompted</p>
+                          <p>• Camera requires HTTPS connection</p>
+                          <p>• Configure SSL certificate on your NAS</p>
+                          <p>• Or use manual navigation below</p>
                         </div>
                       </div>
                     </div>
@@ -376,9 +376,9 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
               
               <div className="text-sm text-gray-600 mb-4 space-y-2">
                 <p>Point your camera at a QR code to scan it</p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-xs text-blue-700">
-                    <strong>Tip:</strong> QR codes work best on mobile devices. Each box has a QR code you can scan to quickly access it.
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <p className="text-xs text-amber-700">
+                    <strong>Note:</strong> Camera scanning requires HTTPS. For HTTP connections, use the manual navigation option below.
                   </p>
                 </div>
               </div>

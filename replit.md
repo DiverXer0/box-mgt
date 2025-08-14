@@ -21,6 +21,7 @@ This is a comprehensive Box Management System - a web application for organizing
 - TypeScript throughout for type safety
 - **Container Station deployment successful** - Vite dependency issues resolved, QR code display fixed, receipt viewing implemented
 - **User verified working** - QR code generation and receipt viewing both functioning correctly
+- **QR Scanner limitation identified** - Camera access requires HTTPS, manual navigation provided as fallback for HTTP deployments
 
 # User Preferences
 
