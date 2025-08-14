@@ -2,9 +2,13 @@ import QRCode from 'qrcode';
 
 export async function generateQRCode(data: string, canvas: HTMLCanvasElement): Promise<void> {
   try {
+    // Set canvas size explicitly
+    canvas.width = 256;
+    canvas.height = 256;
+    
     await QRCode.toCanvas(canvas, data, {
-      width: 200,
-      margin: 1,
+      width: 256,
+      margin: 2,
       color: {
         dark: '#000000',
         light: '#FFFFFF'

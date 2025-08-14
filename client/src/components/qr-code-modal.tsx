@@ -119,7 +119,9 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
               <div className="bg-white p-6 rounded-lg border border-gray-200 mb-4">
                 <canvas
                   ref={canvasRef}
-                  className="mx-auto"
+                  className="mx-auto block"
+                  width="256"
+                  height="256"
                   data-testid="canvas-qr-code"
                 />
               </div>

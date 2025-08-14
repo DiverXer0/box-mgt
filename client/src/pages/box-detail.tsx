@@ -285,6 +285,17 @@ export default function BoxDetail() {
                     </div>
                     
                     <div className="flex items-center space-x-2">
+                      {item.receiptFilename && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => window.open(`/api/items/${item.id}/receipt`, '_blank')}
+                          data-testid={`button-view-receipt-${item.id}`}
+                          title="View Receipt"
+                        >
+                          <Receipt className="h-4 w-4 text-blue-600" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
