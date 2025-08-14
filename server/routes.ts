@@ -410,13 +410,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const backupUploadsPath = path.join(tempExtractPath, 'uploads');
       
       if (fs.existsSync(backupUploadsPath)) {
-        // Remove current uploads and replace with backup
+        // Clear current uploads content (but not the directory itself)
         if (fs.existsSync(currentUploadsPath)) {
-          fs.rmSync(currentUploadsPath, { recursive: true, force: true });
+          const items = fs.readdirSync(currentUploadsPath);
+          for (const item of items) {
+            const itemPath = path.join(currentUploadsPath, item);
+            const stat = fs.statSync(itemPath);
+            if (stat.isDirectory()) {
+              // Skip temp directory we created
+              if (item !== 'temp') {
+                fs.rmSync(itemPath, { recursive: true, force: true });
+              }
+            } else {
+              fs.rmSync(itemPath, { force: true });
+            }
+          }
         }
         
-        // Copy uploads directory
-        fs.cpSync(backupUploadsPath, currentUploadsPath, { recursive: true });
+        // Copy contents from backup uploads directory
+        const backupItems = fs.readdirSync(backupUploadsPath);
+        for (const item of backupItems) {
+          const sourcePath = path.join(backupUploadsPath, item);
+          const destPath = path.join(currentUploadsPath, item);
+          
+          const stat = fs.statSync(sourcePath);
+          if (stat.isDirectory()) {
+            fs.cpSync(sourcePath, destPath, { recursive: true });
+          } else {
+            fs.copyFileSync(sourcePath, destPath);
+          }
+        }
       }
 
       // Clean up temporary files
