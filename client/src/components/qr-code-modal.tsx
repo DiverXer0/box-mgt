@@ -21,11 +21,35 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
   const [stream, setStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
-    if (open && mode === "display" && boxId && canvasRef.current) {
-      const url = `${window.location.origin}/box/${boxId}`;
-      generateQRCode(url, canvasRef.current);
+    if (open && mode === "display" && boxId) {
+      const generateCode = async () => {
+        // Small delay to ensure canvas is rendered
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        if (canvasRef.current) {
+          const url = `${window.location.origin}/box/${boxId}`;
+          console.log('Generating QR code for URL:', url);
+          console.log('Canvas element:', canvasRef.current);
+          
+          try {
+            await generateQRCode(url, canvasRef.current);
+            console.log('QR code generated successfully');
+          } catch (error) {
+            console.error('QR code generation failed:', error);
+            toast({
+              title: "QR Code Error",
+              description: "Failed to generate QR code. Please try again.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          console.error('Canvas element not found');
+        }
+      };
+      
+      generateCode();
     }
-  }, [open, mode, boxId]);
+  }, [open, mode, boxId, toast]);
 
   useEffect(() => {
     if (open && mode === "scanner") {
@@ -119,9 +143,10 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
               <div className="bg-white p-6 rounded-lg border border-gray-200 mb-4">
                 <canvas
                   ref={canvasRef}
-                  className="mx-auto block"
+                  className="mx-auto block border border-gray-100"
                   width="256"
                   height="256"
+                  style={{ width: '256px', height: '256px' }}
                   data-testid="canvas-qr-code"
                 />
               </div>
