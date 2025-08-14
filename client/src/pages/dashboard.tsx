@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, QrCode, Boxes } from "lucide-react";
+import { Search, Plus, QrCode, Boxes, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatsOverview from "@/components/stats-overview";
@@ -79,6 +79,15 @@ export default function Dashboard() {
               >
                 <QrCode className="h-4 w-4 mr-2" />
                 Scan QR
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.location.href = '/settings'}
+                data-testid="button-settings"
+                title="Settings"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
               </Button>
               <Button
                 onClick={() => setIsAddBoxOpen(true)}

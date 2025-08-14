@@ -6,6 +6,9 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { promisify } from "util";
+import archiver from "archiver";
+import yauzl from "yauzl";
+import { pipeline } from "stream/promises";
 
 const unlinkAsync = promisify(fs.unlink);
 
@@ -270,6 +273,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(results);
     } catch (error) {
       res.status(500).json({ message: "Search failed" });
+    }
+  });
+
+  // Backup and Restore endpoints
+  app.post("/api/backup/full", async (req, res) => {
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      const backupFileName = `box-management-backup-${timestamp}.zip`;
+      
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="${backupFileName}"`);
+
+      const archive = archiver('zip', { zlib: { level: 9 } });
+      
+      archive.on('error', (err) => {
+        console.error('Archive error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ message: 'Backup failed' });
+        }
+      });
+
+      archive.pipe(res);
+
+      // Add database file
+      const dbPath = path.join(process.cwd(), 'data', 'boxes.db');
+      if (fs.existsSync(dbPath)) {
+        archive.file(dbPath, { name: 'data/boxes.db' });
+      }
+
+      // Add uploads directory
+      const uploadsPath = path.join(process.cwd(), 'uploads');
+      if (fs.existsSync(uploadsPath)) {
+        archive.directory(uploadsPath, 'uploads');
+      }
+
+      // Add metadata
+      const metadata = {
+        created: new Date().toISOString(),
+        version: '1.0.0',
+        type: 'full-backup'
+      };
+      archive.append(JSON.stringify(metadata, null, 2), { name: 'backup-metadata.json' });
+
+      await archive.finalize();
+    } catch (error) {
+      console.error('Backup error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Backup failed' });
+      }
+    }
+  });
+
+  // Configure multer for backup uploads  
+  const backupUpload = multer({
+    dest: path.join(process.cwd(), 'temp'),
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
+    fileFilter: (req, file, cb) => {
+      if (file.originalname.endsWith('.zip')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only ZIP files are allowed for restore'));
+      }
+    }
+  });
+
+  app.post("/api/restore/full", backupUpload.single('backup'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No backup file uploaded" });
+      }
+
+      const tempExtractPath = path.join(process.cwd(), 'temp', `extract-${Date.now()}`);
+      fs.mkdirSync(tempExtractPath, { recursive: true });
+
+      // Extract ZIP file
+      await new Promise<void>((resolve, reject) => {
+        yauzl.open(req.file!.path, { lazyEntries: true }, (err, zipfile) => {
+          if (err) return reject(err);
+          
+          zipfile.readEntry();
+          zipfile.on('entry', (entry) => {
+            if (/\/$/.test(entry.fileName)) {
+              // Directory entry
+              const dirPath = path.join(tempExtractPath, entry.fileName);
+              fs.mkdirSync(dirPath, { recursive: true });
+              zipfile.readEntry();
+            } else {
+              // File entry
+              zipfile.openReadStream(entry, (err, readStream) => {
+                if (err) return reject(err);
+                
+                const filePath = path.join(tempExtractPath, entry.fileName);
+                const dirPath = path.dirname(filePath);
+                fs.mkdirSync(dirPath, { recursive: true });
+                
+                const writeStream = fs.createWriteStream(filePath);
+                readStream.pipe(writeStream);
+                writeStream.on('close', () => zipfile.readEntry());
+              });
+            }
+          });
+          
+          zipfile.on('end', () => resolve());
+          zipfile.on('error', reject);
+        });
+      });
+
+      // Validate backup metadata
+      const metadataPath = path.join(tempExtractPath, 'backup-metadata.json');
+      if (fs.existsSync(metadataPath)) {
+        const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+        console.log('Restoring backup created:', metadata.created);
+      }
+
+      // Stop any database connections and restore database
+      const dbPath = path.join(process.cwd(), 'data', 'boxes.db');
+      const backupDbPath = path.join(tempExtractPath, 'data', 'boxes.db');
+      
+      if (fs.existsSync(backupDbPath)) {
+        // Ensure data directory exists
+        const dataDir = path.dirname(dbPath);
+        fs.mkdirSync(dataDir, { recursive: true });
+        
+        // Copy database file
+        fs.copyFileSync(backupDbPath, dbPath);
+      }
+
+      // Restore uploads directory
+      const currentUploadsPath = path.join(process.cwd(), 'uploads');
+      const backupUploadsPath = path.join(tempExtractPath, 'uploads');
+      
+      if (fs.existsSync(backupUploadsPath)) {
+        // Remove current uploads and replace with backup
+        if (fs.existsSync(currentUploadsPath)) {
+          fs.rmSync(currentUploadsPath, { recursive: true, force: true });
+        }
+        
+        // Copy uploads directory
+        fs.cpSync(backupUploadsPath, currentUploadsPath, { recursive: true });
+      }
+
+      // Clean up temporary files
+      fs.rmSync(req.file.path, { force: true });
+      fs.rmSync(tempExtractPath, { recursive: true, force: true });
+
+      res.json({ message: 'Restore completed successfully' });
+    } catch (error) {
+      console.error('Restore error:', error);
+      
+      // Clean up on error
+      if (req.file) {
+        fs.rmSync(req.file.path, { force: true });
+      }
+      
+      res.status(500).json({ message: 'Restore failed: ' + (error as Error).message });
     }
   });
 
