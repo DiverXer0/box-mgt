@@ -12,7 +12,7 @@ RUN npm ci
 COPY . .
 
 # Build the application
-RUN vite build && node esbuild.config.js
+RUN npx vite build && node esbuild.config.js
 
 # Production stage
 FROM node:20-alpine

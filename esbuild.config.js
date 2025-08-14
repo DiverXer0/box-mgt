@@ -2,10 +2,11 @@ import esbuild from 'esbuild';
 
 await esbuild.build({
   entryPoints: ['server/index.prod.ts'],
+  outfile: 'dist/index.js',
   bundle: true,
   platform: 'node',
   format: 'esm',
-  outdir: 'dist',
+
   packages: 'external',
   external: [
     'vite',
