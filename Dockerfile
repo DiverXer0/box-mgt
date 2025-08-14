@@ -12,7 +12,7 @@ RUN npm ci
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN vite build && node esbuild.config.js
 
 # Production stage
 FROM node:20-alpine
@@ -49,4 +49,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:5000/ || exit 1
 
 # Start application
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]

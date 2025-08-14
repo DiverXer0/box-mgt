@@ -1,7 +1,7 @@
 import esbuild from 'esbuild';
 
 await esbuild.build({
-  entryPoints: ['server/index.ts'],
+  entryPoints: ['server/index.prod.ts'],
   bundle: true,
   platform: 'node',
   format: 'esm',
@@ -11,7 +11,8 @@ await esbuild.build({
     'vite',
     '@replit/vite-plugin-cartographer',
     '@replit/vite-plugin-runtime-error-modal',
-    'nanoid'
+    'nanoid',
+    '../vite.config'
   ],
   define: {
     'process.env.NODE_ENV': '"production"'
