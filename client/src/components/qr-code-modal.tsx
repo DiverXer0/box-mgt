@@ -71,27 +71,46 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
     console.log('Platform:', navigator.platform);
     console.log('Location protocol:', location.protocol);
     console.log('Location hostname:', location.hostname);
+    console.log('Is secure context:', window.isSecureContext);
     
     // Enhanced mobile detection
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     console.log('Is mobile device:', isMobile);
     
-    // Check if navigator.mediaDevices is available
-    if (!navigator.mediaDevices) {
-      console.error('navigator.mediaDevices not available');
-      toast({
-        title: "Camera API Unavailable",
-        description: "This browser doesn't support camera access. Try Chrome, Firefox, or Safari.",
-        variant: "destructive",
-      });
+    // Check navigator object structure
+    console.log('navigator keys:', Object.keys(navigator));
+    console.log('navigator.mediaDevices exists:', 'mediaDevices' in navigator);
+    console.log('navigator.mediaDevices value:', navigator.mediaDevices);
+    
+    // Check for legacy getUserMedia APIs
+    const hasLegacyGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia);
+    console.log('Has legacy getUserMedia:', hasLegacyGetUserMedia);
+    
+    // Modern API check
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices !== 'object') {
+      console.error('navigator.mediaDevices not available or not an object');
+      
+      if (hasLegacyGetUserMedia) {
+        toast({
+          title: "Outdated Browser",
+          description: "Your browser uses an old camera API. Please update to a newer version.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Camera Not Supported",
+          description: "This browser doesn't support camera access. Try Chrome, Firefox, or Safari on a secure connection.",
+          variant: "destructive",
+        });
+      }
       return;
     }
     
-    if (!navigator.mediaDevices.getUserMedia) {
-      console.error('getUserMedia not available');
+    if (!navigator.mediaDevices.getUserMedia || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+      console.error('getUserMedia not available or not a function');
       toast({
         title: "Camera Access Unavailable", 
-        description: "Camera access is not supported. Please use a modern browser.",
+        description: "Camera access is not supported. Please use a modern browser with HTTPS.",
         variant: "destructive",
       });
       return;
@@ -381,6 +400,27 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
                     size="sm"
                     onClick={async () => {
                       console.log('=== MANUAL CAMERA TEST ===');
+                      console.log('navigator.mediaDevices:', navigator.mediaDevices);
+                      console.log('typeof navigator.mediaDevices:', typeof navigator.mediaDevices);
+                      
+                      if (!navigator.mediaDevices || typeof navigator.mediaDevices !== 'object') {
+                        toast({
+                          title: "Camera API Missing",
+                          description: "navigator.mediaDevices is undefined. Need HTTPS or newer browser.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      if (!navigator.mediaDevices.getUserMedia || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+                        toast({
+                          title: "getUserMedia Missing",
+                          description: "Camera function not available. Try a different browser.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
                       try {
                         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                         console.log('✓ Camera access successful!');

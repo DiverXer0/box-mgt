@@ -77,11 +77,20 @@ export default function Dashboard() {
                 onClick={async () => {
                   console.log('=== QUICK CAMERA TEST (MOBILE) ===');
                   console.log('User agent:', navigator.userAgent);
-                  console.log('Has mediaDevices:', !!navigator.mediaDevices);
+                  console.log('Is secure context:', window.isSecureContext);
+                  console.log('Protocol:', location.protocol);
+                  console.log('navigator.mediaDevices type:', typeof navigator.mediaDevices);
+                  console.log('navigator.mediaDevices value:', navigator.mediaDevices);
                   console.log('Has getUserMedia:', !!navigator.mediaDevices?.getUserMedia);
                   
-                  if (!navigator.mediaDevices?.getUserMedia) {
-                    alert('Camera API not available on this device/browser');
+                  // Check for the exact error from the screenshot
+                  if (!navigator.mediaDevices || typeof navigator.mediaDevices !== 'object') {
+                    alert('navigator.mediaDevices is undefined - need HTTPS or newer browser');
+                    return;
+                  }
+                  
+                  if (!navigator.mediaDevices.getUserMedia || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+                    alert('getUserMedia function not available');
                     return;
                   }
                   
