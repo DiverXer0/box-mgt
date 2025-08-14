@@ -73,45 +73,6 @@ export default function Dashboard() {
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
-                size="sm"
-                onClick={async () => {
-                  console.log('=== QUICK CAMERA TEST (MOBILE) ===');
-                  console.log('User agent:', navigator.userAgent);
-                  console.log('Is secure context:', window.isSecureContext);
-                  console.log('Protocol:', location.protocol);
-                  console.log('navigator.mediaDevices type:', typeof navigator.mediaDevices);
-                  console.log('navigator.mediaDevices value:', navigator.mediaDevices);
-                  console.log('Has getUserMedia:', !!navigator.mediaDevices?.getUserMedia);
-                  
-                  // Check for the exact error from the screenshot
-                  if (!navigator.mediaDevices || typeof navigator.mediaDevices !== 'object') {
-                    alert('navigator.mediaDevices is undefined - need HTTPS or newer browser');
-                    return;
-                  }
-                  
-                  if (!navigator.mediaDevices.getUserMedia || typeof navigator.mediaDevices.getUserMedia !== 'function') {
-                    alert('getUserMedia function not available');
-                    return;
-                  }
-                  
-                  try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    console.log('✓ Camera test successful!');
-                    stream.getTracks().forEach(track => track.stop());
-                    alert('Camera access works! Try the QR scanner now.');
-                  } catch (error: any) {
-                    console.error('✗ Camera test failed:', error);
-                    alert(`Camera failed: ${error.name} - ${error.message}`);
-                  }
-                }}
-                data-testid="button-camera-test"
-                title="Test Camera"
-                className="hidden sm:inline-flex"
-              >
-                📱 Test
-              </Button>
-              <Button
-                variant="outline"
                 onClick={() => setIsQRScannerOpen(true)}
                 data-testid="button-qr-scanner"
                 title="Scan QR Code"
