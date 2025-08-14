@@ -66,20 +66,61 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
   }, [open, mode]);
 
   const startScanning = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment" } 
+    console.log('Starting QR scanner...');
+    
+    // Check if navigator.mediaDevices is available
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.error('Camera API not supported');
+      toast({
+        title: "Camera Not Supported",
+        description: "Your browser does not support camera access.",
+        variant: "destructive",
       });
+      return;
+    }
+
+    try {
+      console.log('Requesting camera permission...');
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: "environment",
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } 
+      });
+      
+      console.log('Camera permission granted, setting up video stream');
       setStream(mediaStream);
+      
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
+        await videoRef.current.play();
+        console.log('Video stream started successfully');
       }
+      
       setScanning(true);
+      
+      toast({
+        title: "Camera Ready",
+        description: "Point your camera at a QR code to scan it.",
+      });
+      
     } catch (error) {
+      console.error('Camera access error:', error);
+      
+      let errorMessage = "Unable to access camera. Please check permissions.";
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage = "Camera access denied. Please allow camera permission and try again.";
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = "No camera found on this device.";
+      } else if (error.name === 'NotSupportedError') {
+        errorMessage = "Camera not supported on this device.";
+      }
+      
       toast({
         title: "Camera Error",
-        description: "Unable to access camera. Please check permissions.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -210,8 +251,9 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
                 ) : (
                   <div className="w-full h-64 flex items-center justify-center text-gray-500">
                     <div className="text-center">
-                      <Camera className="mx-auto h-12 w-12 mb-2" />
-                      <p>Camera not available</p>
+                      <Camera className="mx-auto h-12 w-12 mb-4" />
+                      <p className="mb-2">Starting camera...</p>
+                      <p className="text-xs">Please allow camera access when prompted</p>
                     </div>
                   </div>
                 )}

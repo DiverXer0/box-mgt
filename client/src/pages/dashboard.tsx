@@ -72,19 +72,20 @@ export default function Dashboard() {
             {/* Action Buttons */}
             <div className="flex items-center space-x-3">
               <Button
+                variant="outline"
+                onClick={() => setIsQRScannerOpen(true)}
+                data-testid="button-qr-scanner"
+                title="Scan QR Code"
+              >
+                <QrCode className="h-4 w-4 mr-2" />
+                Scan QR
+              </Button>
+              <Button
                 onClick={() => setIsAddBoxOpen(true)}
                 data-testid="button-add-box"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Box
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsQRScannerOpen(true)}
-                data-testid="button-qr-scanner"
-              >
-                <QrCode className="h-4 w-4" />
               </Button>
             </div>
           </div>
