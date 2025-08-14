@@ -68,17 +68,6 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
   const startScanning = async () => {
     console.log('Starting QR scanner...');
     
-    // Check if we're in a secure context (HTTPS or localhost)
-    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-      console.error('Camera API requires HTTPS or localhost');
-      toast({
-        title: "HTTPS Required",
-        description: "Camera access requires a secure connection (HTTPS).",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Check if navigator.mediaDevices is available
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       console.error('Camera API not supported');
@@ -116,17 +105,19 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
         description: "Point your camera at a QR code to scan it.",
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Camera access error:', error);
       
       let errorMessage = "Unable to access camera. Please check permissions.";
       
-      if (error.name === 'NotAllowedError') {
+      if (error?.name === 'NotAllowedError') {
         errorMessage = "Camera access denied. Please allow camera permission and try again.";
-      } else if (error.name === 'NotFoundError') {
+      } else if (error?.name === 'NotFoundError') {
         errorMessage = "No camera found on this device.";
-      } else if (error.name === 'NotSupportedError') {
+      } else if (error?.name === 'NotSupportedError') {
         errorMessage = "Camera not supported on this device.";
+      } else if (error?.name === 'NotReadableError') {
+        errorMessage = "Camera is already in use by another application.";
       }
       
       toast({
@@ -269,7 +260,7 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
                         <div className="text-xs space-y-1">
                           <p>• Try using a mobile device</p>
                           <p>• Use Chrome, Firefox, or Safari</p>
-                          <p>• Ensure you're using HTTPS</p>
+                          <p>• Allow camera permissions when prompted</p>
                         </div>
                       </div>
                     </div>
