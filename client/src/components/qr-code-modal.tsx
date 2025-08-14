@@ -68,12 +68,23 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
   const startScanning = async () => {
     console.log('Starting QR scanner...');
     
+    // Check if we're in a secure context (HTTPS or localhost)
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      console.error('Camera API requires HTTPS or localhost');
+      toast({
+        title: "HTTPS Required",
+        description: "Camera access requires a secure connection (HTTPS).",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Check if navigator.mediaDevices is available
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       console.error('Camera API not supported');
       toast({
-        title: "Camera Not Supported",
-        description: "Your browser does not support camera access.",
+        title: "Camera Not Available",
+        description: "Camera scanning is not supported in this browser or environment. Try using a mobile device or different browser.",
         variant: "destructive",
       });
       return;
@@ -250,27 +261,75 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
                   </div>
                 ) : (
                   <div className="w-full h-64 flex items-center justify-center text-gray-500">
-                    <div className="text-center">
-                      <Camera className="mx-auto h-12 w-12 mb-4" />
-                      <p className="mb-2">Starting camera...</p>
-                      <p className="text-xs">Please allow camera access when prompted</p>
+                    <div className="text-center space-y-3">
+                      <Camera className="mx-auto h-12 w-12" />
+                      <div>
+                        <p className="font-medium mb-1">Camera Not Available</p>
+                        <p className="text-sm mb-2">QR code scanning requires camera access</p>
+                        <div className="text-xs space-y-1">
+                          <p>• Try using a mobile device</p>
+                          <p>• Use Chrome, Firefox, or Safari</p>
+                          <p>• Ensure you're using HTTPS</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
               
-              <p className="text-sm text-gray-600 mb-4">
-                Point your camera at a QR code to scan it
-              </p>
+              <div className="text-sm text-gray-600 mb-4 space-y-2">
+                <p>Point your camera at a QR code to scan it</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-700">
+                    <strong>Tip:</strong> QR codes work best on mobile devices. Each box has a QR code you can scan to quickly access it.
+                  </p>
+                </div>
+              </div>
               
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                data-testid="button-close-scanner"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Close Scanner
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  className="w-full"
+                  data-testid="button-close-scanner"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Close Scanner
+                </Button>
+                
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 mb-2">Alternative: Navigate manually</p>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      placeholder="Enter box ID (e.g., box-kitchen-storage)"
+                      className="flex-1 px-3 py-2 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const boxId = (e.target as HTMLInputElement).value.trim();
+                          if (boxId) {
+                            window.location.href = `/box/${boxId}`;
+                          }
+                        }
+                      }}
+                      data-testid="input-manual-box-id"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        const input = e.currentTarget.parentElement?.querySelector('input');
+                        const boxId = input?.value.trim();
+                        if (boxId) {
+                          window.location.href = `/box/${boxId}`;
+                        }
+                      }}
+                      data-testid="button-navigate-to-box"
+                    >
+                      Go
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </>
           ) : null}
         </div>
