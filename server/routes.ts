@@ -326,8 +326,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Configure multer for backup uploads  
+  const tempDir = path.join(process.cwd(), 'uploads', 'temp');
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+  
   const backupUpload = multer({
-    dest: path.join(process.cwd(), 'temp'),
+    dest: tempDir,
     limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
     fileFilter: (req, file, cb) => {
       if (file.originalname.endsWith('.zip')) {
@@ -344,7 +349,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No backup file uploaded" });
       }
 
-      const tempExtractPath = path.join(process.cwd(), 'temp', `extract-${Date.now()}`);
+      const tempExtractPath = path.join(process.cwd(), 'uploads', 'temp', `extract-${Date.now()}`);
       fs.mkdirSync(tempExtractPath, { recursive: true });
 
       // Extract ZIP file

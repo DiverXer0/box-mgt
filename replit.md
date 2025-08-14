@@ -23,6 +23,7 @@ This is a comprehensive Box Management System - a web application for organizing
 - **User verified working** - QR code generation and receipt viewing both functioning correctly
 - **QR Scanner limitation identified** - Camera access requires HTTPS, manual navigation provided as fallback for HTTP deployments
 - **Port 80 Configuration** - Updated to run on standard HTTP port 80 for production deployments
+- **Settings Page Created** - Full system backup and restore functionality with proper Docker permissions
 
 # User Preferences
 
