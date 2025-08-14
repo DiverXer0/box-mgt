@@ -93,9 +93,10 @@ export default function Settings() {
       // Handle response
       xhr.addEventListener('load', () => {
         if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
           toast({
             title: "Restore Complete",
-            description: "Your data has been successfully restored. The page will reload.",
+            description: response.message || "Your data has been successfully restored. The page will reload.",
           });
           // Reload the page to show restored data
           setTimeout(() => window.location.reload(), 2000);

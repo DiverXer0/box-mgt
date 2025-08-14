@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertBoxSchema, insertItemSchema } from "@shared/schema";
+import { reconnectDatabase } from "./db";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -392,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Restoring backup created:', metadata.created);
       }
 
-      // Stop any database connections and restore database
+      // Restore database files (including WAL files)
       const dbPath = path.join(process.cwd(), 'data', 'boxes.db');
       const backupDbPath = path.join(tempExtractPath, 'data', 'boxes.db');
       
@@ -401,8 +402,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const dataDir = path.dirname(dbPath);
         fs.mkdirSync(dataDir, { recursive: true });
         
-        // Copy database file
+        // Remove all SQLite files (main db, WAL, and SHM files)
+        const dbFiles = [
+          path.join(dataDir, 'boxes.db'),
+          path.join(dataDir, 'boxes.db-wal'), 
+          path.join(dataDir, 'boxes.db-shm')
+        ];
+        
+        for (const file of dbFiles) {
+          if (fs.existsSync(file)) {
+            fs.rmSync(file, { force: true });
+          }
+        }
+        
+        // Copy the backup database file
         fs.copyFileSync(backupDbPath, dbPath);
+        
+        // Reconnect to the database with new data
+        reconnectDatabase();
+        
+        console.log('Database restored and reconnected successfully');
       }
 
       // Restore uploads directory
@@ -446,7 +465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       fs.rmSync(req.file.path, { force: true });
       fs.rmSync(tempExtractPath, { recursive: true, force: true });
 
-      res.json({ message: 'Restore completed successfully' });
+      res.json({ message: 'Restore completed successfully. Please refresh the page to see restored data.' });
     } catch (error) {
       console.error('Restore error:', error);
       

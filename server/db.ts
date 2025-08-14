@@ -14,10 +14,25 @@ if (!fs.existsSync(dataDir)) {
 const dbPath = path.join(dataDir, 'boxes.db');
 console.log(`Database path: ${dbPath}`);
 
-const sqlite = new Database(dbPath);
+let sqlite = new Database(dbPath);
 sqlite.pragma('journal_mode = WAL');
 
-export const db = drizzle(sqlite, { schema });
+export let db = drizzle(sqlite, { schema });
+
+// Function to reconnect database after restore
+export function reconnectDatabase() {
+  try {
+    sqlite.close();
+  } catch (error) {
+    // Ignore close errors
+  }
+  
+  sqlite = new Database(dbPath);
+  sqlite.pragma('journal_mode = WAL');
+  db = drizzle(sqlite, { schema });
+  
+  console.log('Database reconnected after restore');
+}
 
 // Initialize database schema
 export function initializeDatabase() {
