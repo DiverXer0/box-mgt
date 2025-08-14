@@ -67,33 +67,109 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
 
   const startScanning = async () => {
     console.log('Starting QR scanner...');
+    console.log('User agent:', navigator.userAgent);
+    console.log('Platform:', navigator.platform);
+    console.log('Location protocol:', location.protocol);
+    console.log('Location hostname:', location.hostname);
+    
+    // Enhanced mobile detection
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log('Is mobile device:', isMobile);
     
     // Check if navigator.mediaDevices is available
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      console.error('Camera API not supported');
+    if (!navigator.mediaDevices) {
+      console.error('navigator.mediaDevices not available');
       toast({
-        title: "Camera Not Available",
-        description: "Camera scanning is not supported in this browser or environment. Try using a mobile device or different browser.",
+        title: "Camera API Unavailable",
+        description: "This browser doesn't support camera access. Try Chrome, Firefox, or Safari.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!navigator.mediaDevices.getUserMedia) {
+      console.error('getUserMedia not available');
+      toast({
+        title: "Camera Access Unavailable", 
+        description: "Camera access is not supported. Please use a modern browser.",
         variant: "destructive",
       });
       return;
     }
 
+    // Check if we can enumerate devices first
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      console.log('Available cameras:', videoDevices.length);
+      console.log('Camera devices:', videoDevices);
+      
+      if (videoDevices.length === 0) {
+        console.error('No camera devices found');
+        toast({
+          title: "No Camera Found",
+          description: "No camera devices detected on this device.",
+          variant: "destructive",
+        });
+        return;
+      }
+    } catch (enumError: any) {
+      console.warn('Could not enumerate devices:', enumError);
+      // Continue anyway - some browsers restrict this until permission is granted
+    }
+
     try {
       console.log('Requesting camera permission...');
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: "environment",
+      
+      // Different constraints for mobile vs desktop
+      const constraints = isMobile ? {
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { min: 320, ideal: 640, max: 1920 },
+          height: { min: 240, ideal: 480, max: 1080 }
+        }
+      } : {
+        video: {
           width: { ideal: 640 },
           height: { ideal: 480 }
-        } 
-      });
+        }
+      };
+      
+      console.log('Using constraints:', constraints);
+      
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       
       console.log('Camera permission granted, setting up video stream');
+      console.log('Stream tracks:', mediaStream.getTracks().map(track => ({
+        kind: track.kind,
+        label: track.label,
+        enabled: track.enabled,
+        readyState: track.readyState
+      })));
+      
       setStream(mediaStream);
       
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        
+        // Wait for metadata to load before playing
+        await new Promise((resolve, reject) => {
+          if (!videoRef.current) return reject('Video element not found');
+          
+          videoRef.current.onloadedmetadata = () => {
+            console.log('Video metadata loaded');
+            resolve(true);
+          };
+          
+          videoRef.current.onerror = (e) => {
+            console.error('Video error:', e);
+            reject(e);
+          };
+          
+          // Timeout after 5 seconds
+          setTimeout(() => reject('Video load timeout'), 5000);
+        });
+        
         await videoRef.current.play();
         console.log('Video stream started successfully');
       }
@@ -106,7 +182,12 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
       });
       
     } catch (error: any) {
-      console.error('Camera access error:', error);
+      console.error('Camera access error details:', {
+        name: error?.name,
+        message: error?.message,
+        constraint: error?.constraint,
+        stack: error?.stack
+      });
       
       let errorMessage = "Unable to access camera. Please check permissions.";
       
@@ -118,6 +199,10 @@ export default function QRCodeModal({ open, onOpenChange, mode, boxId, boxName }
         errorMessage = "Camera not supported on this device.";
       } else if (error?.name === 'NotReadableError') {
         errorMessage = "Camera is already in use by another application.";
+      } else if (error?.name === 'OverconstrainedError') {
+        errorMessage = "Camera doesn't support the requested configuration.";
+      } else if (error?.name === 'SecurityError') {
+        errorMessage = "Camera access blocked by security policy.";
       }
       
       toast({
