@@ -69,7 +69,7 @@ export default function BoxCard({ box }: BoxCardProps) {
 
   return (
     <>
-      <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-white border border-gray-200 hover:border-blue-200 group" data-testid={`card-box-${box.id}`}>
+      <Card className="card-interactive animate-fade-in group" data-testid={`card-box-${box.id}`}>
         <CardContent className="p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1" onClick={handleViewDetails}>

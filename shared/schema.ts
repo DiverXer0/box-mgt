@@ -34,23 +34,6 @@ export const itemsRelations = relations(items, ({ one }) => ({
   }),
 }));
 
-export const locations = sqliteTable("locations", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  createdAt: text("created_at").default(sql`(datetime('now'))`),
-});
-
-export const activityLogs = sqliteTable("activity_logs", {
-  id: text("id").primaryKey(),
-  action: text("action").notNull(), // 'create', 'update', 'delete', 'backup', 'restore'
-  entityType: text("entity_type").notNull(), // 'box', 'item', 'location', 'system'
-  entityId: text("entity_id"),
-  entityName: text("entity_name"),
-  details: text("details"), // JSON string with additional details
-  timestamp: text("timestamp").default(sql`(datetime('now'))`),
-});
-
 export const insertBoxSchema = createInsertSchema(boxes).omit({
   id: true,
   createdAt: true,
@@ -61,24 +44,10 @@ export const insertItemSchema = createInsertSchema(items).omit({
   createdAt: true,
 });
 
-export const insertLocationSchema = createInsertSchema(locations).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({
-  id: true,
-  timestamp: true,
-});
-
 export type InsertBox = z.infer<typeof insertBoxSchema>;
 export type InsertItem = z.infer<typeof insertItemSchema>;
-export type InsertLocation = z.infer<typeof insertLocationSchema>;
-export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 export type Box = typeof boxes.$inferSelect;
 export type Item = typeof items.$inferSelect;
-export type Location = typeof locations.$inferSelect;
-export type ActivityLog = typeof activityLogs.$inferSelect;
 
 export interface BoxWithStats extends Box {
   itemCount: number;

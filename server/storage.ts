@@ -1,4 +1,4 @@
-import { type Box, type Item, type Location, type ActivityLog, type InsertBox, type InsertItem, type InsertLocation, type InsertActivityLog, type BoxWithStats, type BoxWithItems, boxes, items, locations, activityLogs } from "@shared/schema";
+import { type Box, type Item, type InsertBox, type InsertItem, type BoxWithStats, type BoxWithItems, boxes, items } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db, initializeDatabase } from "./db";
 import { eq, like, or, sql } from "drizzle-orm";
@@ -28,17 +28,6 @@ export interface IStorage {
     totalValue: number;
     itemsWithReceipts: number;
   }>;
-
-  // Location operations
-  getLocations(): Promise<Location[]>;
-  getLocation(id: string): Promise<Location | undefined>;
-  createLocation(location: InsertLocation): Promise<Location>;
-  updateLocation(id: string, location: Partial<InsertLocation>): Promise<Location | undefined>;
-  deleteLocation(id: string): Promise<boolean>;
-
-  // Activity log operations
-  getActivityLogs(limit?: number): Promise<ActivityLog[]>;
-  logActivity(log: InsertActivityLog): Promise<ActivityLog>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -60,21 +49,6 @@ export class DatabaseStorage implements IStorage {
     }
 
     console.log('Initializing sample data...');
-    
-    // Create sample locations (only include fields that exist in schema)
-    const sampleLocations = [
-      { id: "location-kitchen", name: "Kitchen", description: "Kitchen cabinets and pantry" },
-      { id: "location-garage", name: "Garage", description: "Garage storage area" },
-      { id: "location-office", name: "Office", description: "Home office and study room" },
-      { id: "location-basement", name: "Basement", description: "Basement storage area" },
-      { id: "location-attic", name: "Attic", description: "Attic storage space" },
-    ];
-    
-    try {
-      await db.insert(locations).values(sampleLocations);
-    } catch (error) {
-      console.log('Sample locations already exist or failed to create:', error);
-    }
     
     // Create sample boxes
     const sampleBoxes = [
@@ -298,65 +272,6 @@ export class DatabaseStorage implements IStorage {
       totalValue,
       withReceipts,
     };
-  }
-
-  // Location operations
-  async getLocations(): Promise<Location[]> {
-    return await db.select().from(locations).orderBy(locations.name);
-  }
-
-  async getLocation(id: string): Promise<Location | undefined> {
-    const [location] = await db.select().from(locations).where(eq(locations.id, id));
-    return location;
-  }
-
-  async createLocation(location: InsertLocation): Promise<Location> {
-    const newLocation = {
-      id: `location-${randomUUID()}`,
-      name: location.name,
-      description: location.description || null,
-    };
-
-    const [created] = await db.insert(locations).values(newLocation).returning();
-    return created;
-  }
-
-  async updateLocation(id: string, location: Partial<InsertLocation>): Promise<Location | undefined> {
-    const updateData: Partial<Location> = {};
-    if (location.name !== undefined) updateData.name = location.name;
-    if (location.description !== undefined) updateData.description = location.description;
-
-    const [updated] = await db
-      .update(locations)
-      .set(updateData)
-      .where(eq(locations.id, id))
-      .returning();
-
-    return updated;
-  }
-
-  async deleteLocation(id: string): Promise<boolean> {
-    const result = await db.delete(locations).where(eq(locations.id, id));
-    return result.changes > 0;
-  }
-
-  // Activity log operations
-  async getActivityLogs(limit: number = 50): Promise<ActivityLog[]> {
-    return await db.select().from(activityLogs).orderBy(sql`timestamp DESC`).limit(limit);
-  }
-
-  async logActivity(log: InsertActivityLog): Promise<ActivityLog> {
-    const newLog = {
-      id: `log-${randomUUID()}`,
-      action: log.action,
-      entityType: log.entityType,
-      entityId: log.entityId || null,
-      entityName: log.entityName || null,
-      details: log.details || null,
-    };
-
-    const [created] = await db.insert(activityLogs).values(newLog).returning();
-    return created;
   }
 }
 

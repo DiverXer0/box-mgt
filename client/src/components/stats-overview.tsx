@@ -19,7 +19,7 @@ export default function StatsOverview() {
       <div className="mb-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse bg-white border border-gray-200">
+            <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -77,7 +77,7 @@ export default function StatsOverview() {
         {statItems.map((stat, index) => (
           <Card 
             key={stat.label} 
-            className="transition-all duration-200 bg-white border border-gray-200 hover:shadow-md"
+            className="hover-lift animate-fade-in bg-gradient-to-br from-white to-gray-50 border-gray-200"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <CardContent className="p-6">

@@ -1,17 +1,15 @@
 import { useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { z } from "zod";
-import { insertBoxSchema, type InsertBox, type Box, type Location } from "@shared/schema";
+import { insertBoxSchema, type InsertBox, type Box } from "@shared/schema";
 
 interface AddBoxModalProps {
   open: boolean;
@@ -22,10 +20,6 @@ interface AddBoxModalProps {
 export default function AddBoxModal({ open, onOpenChange, editingBox }: AddBoxModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
-  const { data: locations = [] } = useQuery<Location[]>({
-    queryKey: ["/api/locations"],
-  });
   
   const form = useForm<InsertBox>({
     resolver: zodResolver(insertBoxSchema),
@@ -122,26 +116,13 @@ export default function AddBoxModal({ open, onOpenChange, editingBox }: AddBoxMo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Location</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ""}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-box-location">
-                        <SelectValue placeholder="Select a location" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {locations.length === 0 ? (
-                        <SelectItem value="" disabled>
-                          No locations available - create one in Settings
-                        </SelectItem>
-                      ) : (
-                        locations.map((location) => (
-                          <SelectItem key={location.id} value={location.name}>
-                            {location.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input
+                      placeholder="Where is this box stored?"
+                      {...field}
+                      data-testid="input-box-location"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
