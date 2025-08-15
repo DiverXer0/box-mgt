@@ -305,6 +305,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       archive.pipe(res);
 
+      // Force SQLite to commit WAL to main database before backup using better-sqlite3
+      try {
+        const { sqlite } = await import('./db.js');
+        const result = sqlite.pragma('wal_checkpoint(FULL)');
+        console.log('SQLite WAL checkpoint completed:', result);
+        
+        // Verify the checkpoint worked by checking if WAL file is now smaller  
+        const walPath = path.join(process.cwd(), 'data', 'boxes.db-wal');
+        if (fs.existsSync(walPath)) {
+          console.log(`WAL file size after checkpoint: ${fs.statSync(walPath).size} bytes`);
+        }
+      } catch (walError) {
+        console.warn('WAL checkpoint failed:', walError);
+      }
+
       // Add database file
       const dbPath = path.join(process.cwd(), 'data', 'boxes.db');
       console.log(`Backup - DB path: ${dbPath}`);
@@ -313,6 +328,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const dbSize = fs.statSync(dbPath).size;
         console.log(`Backup - DB size: ${dbSize} bytes`);
         archive.file(dbPath, { name: 'data/boxes.db' });
+        
+        // Also backup WAL and SHM files if they exist
+        const walPath = dbPath + '-wal';
+        const shmPath = dbPath + '-shm';
+        
+        if (fs.existsSync(walPath)) {
+          console.log(`Backup - WAL size: ${fs.statSync(walPath).size} bytes`);
+          archive.file(walPath, { name: 'data/boxes.db-wal' });
+        }
+        
+        if (fs.existsSync(shmPath)) {
+          console.log(`Backup - SHM size: ${fs.statSync(shmPath).size} bytes`);
+          archive.file(shmPath, { name: 'data/boxes.db-shm' });
+        }
       } else {
         console.error('Database file not found during backup!');
       }
@@ -446,8 +475,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Backup DB size: ${fs.existsSync(backupDbPath) ? fs.statSync(backupDbPath).size : 'N/A'} bytes`);
         
         fs.copyFileSync(backupDbPath, dbPath);
-        
         console.log(`New DB size: ${fs.statSync(dbPath).size} bytes`);
+        
+        // Also restore WAL and SHM files if they exist in backup
+        const backupWalPath = path.join(tempExtractPath, 'data', 'boxes.db-wal');
+        const backupShmPath = path.join(tempExtractPath, 'data', 'boxes.db-shm');
+        const walPath = dbPath + '-wal';
+        const shmPath = dbPath + '-shm';
+        
+        if (fs.existsSync(backupWalPath)) {
+          fs.copyFileSync(backupWalPath, walPath);
+          console.log(`Restored WAL file: ${fs.statSync(walPath).size} bytes`);
+        }
+        
+        if (fs.existsSync(backupShmPath)) {
+          fs.copyFileSync(backupShmPath, shmPath);
+          console.log(`Restored SHM file: ${fs.statSync(shmPath).size} bytes`);
+        }
         
         // Reconnect to the database with new data
         reconnectDatabase();

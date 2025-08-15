@@ -14,7 +14,7 @@ if (!fs.existsSync(dataDir)) {
 const dbPath = path.join(dataDir, 'boxes.db');
 console.log(`Database path: ${dbPath}`);
 
-let sqlite = new Database(dbPath);
+export let sqlite = new Database(dbPath);
 sqlite.pragma('journal_mode = WAL');
 
 export let db = drizzle(sqlite, { schema });
