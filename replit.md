@@ -2,7 +2,7 @@
 
 This is a comprehensive Box Management System - a web application for organizing and tracking physical storage boxes and their contents. The system enables users to catalog boxes, manage items within them, upload receipts, generate QR codes for easy access, and perform advanced search and export operations. The application is built as a full-stack solution with a React frontend and Express.js backend, designed to help users efficiently organize and track their physical storage.
 
-## Current Status (August 14, 2025)
+## Current Status (August 15, 2025)
 ✅ **PRODUCTION READY & DEPLOYED** - All features fully working and Container Station deployment successful:
 - Full-stack application with React frontend and Express backend running on port 80 (standard HTTP)
 - **SQLite database persistence** - Data survives container restarts for NAS deployment
@@ -23,7 +23,7 @@ This is a comprehensive Box Management System - a web application for organizing
 - **User verified working** - QR code generation and receipt viewing both functioning correctly
 - **QR Scanner limitation identified** - Camera access requires HTTPS, manual navigation provided as fallback for HTTP deployments
 - **Port 80 Configuration** - Updated to run on standard HTTP port 80 for production deployments
-- **Settings Page & Backup/Restore Complete** - Full system backup downloads ZIP with database+receipts, restore uploads and overwrites all data with proper database reconnection
+- **Complete Backup/Restore System** - Full data integrity with SQLite WAL checkpoint, creates ~94KB archives with all box/item data and receipts, restore completely overwrites existing data with proper database reconnection and storage reinitialization
 
 # User Preferences
 
