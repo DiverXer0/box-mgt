@@ -3,11 +3,14 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Download, Upload, AlertTriangle, Settings as SettingsIcon } from "lucide-react";
+import { Download, Upload, AlertTriangle, Settings as SettingsIcon, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Progress } from "@/components/ui/progress";
 import AppHeader from "@/components/app-header";
+import LocationManager from "@/components/location-manager";
+import ActivityLog from "@/components/activity-log";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Settings() {
   const [, setLocation] = useLocation();
@@ -143,6 +146,36 @@ export default function Settings() {
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="space-y-8">
+        {/* User Preferences Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              User Preferences
+            </CardTitle>
+            <CardDescription>
+              Customize your application settings and preferences.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="space-y-1">
+                <h3 className="font-medium">Theme</h3>
+                <p className="text-sm text-muted-foreground">
+                  Choose between light, dark, or system theme
+                </p>
+              </div>
+              <ThemeToggle />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Location Management Section */}
+        <LocationManager />
+
+        {/* Activity Log Section */}
+        <ActivityLog />
+
         {/* Backup & Restore Section */}
         <Card>
           <CardHeader>

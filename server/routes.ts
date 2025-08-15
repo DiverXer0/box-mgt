@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertBoxSchema, insertItemSchema } from "@shared/schema";
+import { insertBoxSchema, insertItemSchema, insertLocationSchema, insertActivityLogSchema, type Location, type ActivityLog } from "@shared/schema";
 import { reconnectDatabase } from "./db";
 import multer from "multer";
 import path from "path";
@@ -85,6 +85,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const boxData = insertBoxSchema.parse(req.body);
       const box = await storage.createBox(boxData);
+      
+      // Log activity
+      await storage.logActivity({
+        action: "create",
+        entityType: "box",
+        entityId: box.id,
+        entityName: box.name,
+        details: `Created box: ${box.name} at ${box.location}`
+      });
+      
       res.status(201).json(box);
     } catch (error) {
       if (error instanceof Error && error.message.includes('parse')) {
@@ -101,6 +111,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!box) {
         return res.status(404).json({ message: "Box not found" });
       }
+      
+      // Log activity
+      await storage.logActivity({
+        action: "update",
+        entityType: "box",
+        entityId: box.id,
+        entityName: box.name,
+        details: `Updated box: ${box.name}`
+      });
+      
       res.json(box);
     } catch (error) {
       if (error instanceof Error && error.message.includes('parse')) {
@@ -112,10 +132,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/boxes/:id", async (req, res) => {
     try {
+      // Get box info before deletion for logging
+      const box = await storage.getBox(req.params.id);
       const deleted = await storage.deleteBox(req.params.id);
       if (!deleted) {
         return res.status(404).json({ message: "Box not found" });
       }
+      
+      // Log activity
+      if (box) {
+        await storage.logActivity({
+          action: "delete",
+          entityType: "box",
+          entityId: box.id,
+          entityName: box.name,
+          details: `Deleted box: ${box.name} from ${box.location}`
+        });
+      }
+      
       res.json({ message: "Box deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete box" });
@@ -148,6 +182,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const itemData = insertItemSchema.parse(req.body);
       const item = await storage.createItem(itemData);
+      
+      // Log activity
+      await storage.logActivity({
+        action: "create",
+        entityType: "item",
+        entityId: item.id,
+        entityName: item.name,
+        details: `Added item: ${item.name} (qty: ${item.quantity})`
+      });
+      
       res.status(201).json(item);
     } catch (error) {
       if (error instanceof Error && error.message.includes('parse')) {
@@ -553,6 +597,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(500).json({ message: 'Restore failed: ' + (error as Error).message });
+    }
+  });
+
+  // Location management routes
+  app.get("/api/locations", async (req, res) => {
+    try {
+      const locations = await storage.getLocations();
+      res.json(locations);
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+      res.status(500).json({ message: "Failed to fetch locations" });
+    }
+  });
+
+  app.post("/api/locations", async (req, res) => {
+    try {
+      const data = insertLocationSchema.parse(req.body);
+      const location = await storage.createLocation(data);
+      
+      // Log activity
+      await storage.logActivity({
+        action: "create",
+        entityType: "location",
+        entityId: location.id,
+        entityName: location.name,
+        details: `Created location: ${location.name}`
+      });
+
+      res.status(201).json(location);
+    } catch (error) {
+      console.error('Error creating location:', error);
+      res.status(500).json({ message: "Failed to create location" });
+    }
+  });
+
+  app.put("/api/locations/:id", async (req, res) => {
+    try {
+      const data = insertLocationSchema.parse(req.body);
+      const location = await storage.updateLocation(req.params.id, data);
+      
+      if (!location) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+
+      // Log activity
+      await storage.logActivity({
+        action: "update",
+        entityType: "location",
+        entityId: location.id,
+        entityName: location.name,
+        details: `Updated location: ${location.name}`
+      });
+
+      res.json(location);
+    } catch (error) {
+      console.error('Error updating location:', error);
+      res.status(500).json({ message: "Failed to update location" });
+    }
+  });
+
+  app.delete("/api/locations/:id", async (req, res) => {
+    try {
+      const location = await storage.getLocation(req.params.id);
+      if (!location) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+
+      await storage.deleteLocation(req.params.id);
+      
+      // Log activity
+      await storage.logActivity({
+        action: "delete",
+        entityType: "location",
+        entityId: location.id,
+        entityName: location.name,
+        details: `Deleted location: ${location.name}`
+      });
+
+      res.json({ message: "Location deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting location:', error);
+      res.status(500).json({ message: "Failed to delete location" });
+    }
+  });
+
+  // Activity log routes
+  app.get("/api/activity-logs", async (req, res) => {
+    try {
+      const logs = await storage.getActivityLogs(50); // Get last 50 activities
+      res.json(logs);
+    } catch (error) {
+      console.error('Error fetching activity logs:', error);
+      res.status(500).json({ message: "Failed to fetch activity logs" });
     }
   });
 
