@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { z } from "zod";
 import { insertBoxSchema, type InsertBox, type Box, type Location } from "@shared/schema";
 
 interface AddBoxModalProps {
@@ -121,7 +122,7 @@ export default function AddBoxModal({ open, onOpenChange, editingBox }: AddBoxMo
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Location</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || ""}>
                     <FormControl>
                       <SelectTrigger data-testid="select-box-location">
                         <SelectValue placeholder="Select a location" />
@@ -129,7 +130,7 @@ export default function AddBoxModal({ open, onOpenChange, editingBox }: AddBoxMo
                     </FormControl>
                     <SelectContent>
                       {locations.length === 0 ? (
-                        <SelectItem value="no-locations" disabled>
+                        <SelectItem value="" disabled>
                           No locations available - create one in Settings
                         </SelectItem>
                       ) : (
