@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
-import { ArrowLeft, Plus, FileText, Download, QrCode, Edit, Trash2, MapPin, Receipt, DollarSign, Package } from "lucide-react";
+import { Plus, FileText, Download, QrCode, Edit, Trash2, MapPin, Receipt, DollarSign, Package, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import AppHeader from "@/components/app-header";
 import AddItemModal from "@/components/add-item-modal";
 import QRCodeModal from "@/components/qr-code-modal";
 import { useToast } from "@/hooks/use-toast";
@@ -125,122 +126,127 @@ export default function BoxDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setLocation("/")}
-                data-testid="button-back"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <AppHeader 
+        pageTitle={box.name}
+        showSearch={false}
+        showBackButton={true}
+        backButtonText="Dashboard"
+        onBackClick={() => setLocation('/')}
+      >
+        {/* Export Actions in Header */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportPDF}
+          data-testid="button-export-pdf"
+          className="hidden sm:flex items-center space-x-2"
+        >
+          <FileText className="h-4 w-4" />
+          <span>PDF</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportCSV}
+          data-testid="button-export-csv"
+          className="hidden sm:flex items-center space-x-2"
+        >
+          <Download className="h-4 w-4" />
+          <span>CSV</span>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsQRCodeOpen(true)}
+          data-testid="button-show-qr"
+          className="flex items-center space-x-2"
+        >
+          <QrCode className="h-4 w-4" />
+          <span className="hidden sm:inline">QR</span>
+        </Button>
+        <Button
+          onClick={() => setIsAddItemOpen(true)}
+          size="sm"
+          data-testid="button-add-item"
+          className="flex items-center space-x-2"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Add Item</span>
+        </Button>
+      </AppHeader>
+
+      <main className="flex-1">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Box Info Section */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900" data-testid="text-box-name">
-                  {box.name}
-                </h1>
                 <p className="text-gray-600 flex items-center mt-1" data-testid="text-box-location">
                   <MapPin className="h-4 w-4 mr-1" />
                   {box.location}
                 </p>
+                {box.description && (
+                  <p className="mt-2 text-gray-700">{box.description}</p>
+                )}
               </div>
             </div>
             
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleExportPDF}
-                data-testid="button-export-pdf"
-              >
-                <FileText className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleExportCSV}
-                data-testid="button-export-csv"
-              >
-                <Download className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsQRCodeOpen(true)}
-                data-testid="button-show-qr"
-              >
-                <QrCode className="h-4 w-4" />
-              </Button>
-              <Button
-                onClick={() => setIsAddItemOpen(true)}
-                data-testid="button-add-item"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Item
-              </Button>
+            {/* Box Summary Cards */}
+            <div className="grid grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Package className="h-8 w-8 mx-auto text-gray-600 mb-2" />
+                  <p className="text-2xl font-semibold text-gray-900" data-testid="text-item-count">
+                    {box.itemCount}
+                  </p>
+                  <p className="text-sm text-gray-500">Items</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <DollarSign className="h-8 w-8 mx-auto text-green-600 mb-2" />
+                  <p className="text-2xl font-semibold text-green-600" data-testid="text-total-value">
+                    ${box.totalValue.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-500">Total Value</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Receipt className="h-8 w-8 mx-auto text-blue-600 mb-2" />
+                  <p className="text-2xl font-semibold text-blue-600" data-testid="text-receipts-count">
+                    {box.withReceipts}
+                  </p>
+                  <p className="text-sm text-gray-500">With Receipts</p>
+                </CardContent>
+              </Card>
             </div>
           </div>
-          
-          {/* Box Summary */}
-          <div className="mt-6 grid grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <Package className="h-8 w-8 mx-auto text-gray-600 mb-2" />
-                <p className="text-2xl font-semibold text-gray-900" data-testid="text-item-count">
-                  {box.itemCount}
-                </p>
-                <p className="text-sm text-gray-500">Items</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <DollarSign className="h-8 w-8 mx-auto text-green-600 mb-2" />
-                <p className="text-2xl font-semibold text-green-600" data-testid="text-total-value">
-                  ${box.totalValue.toFixed(2)}
-                </p>
-                <p className="text-sm text-gray-500">Total Value</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <Receipt className="h-8 w-8 mx-auto text-blue-600 mb-2" />
-                <p className="text-2xl font-semibold text-blue-600" data-testid="text-receipts-count">
-                  {box.withReceipts}
-                </p>
-                <p className="text-sm text-gray-500">With Receipts</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
 
-      {/* Items List */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Items in this box</h2>
-          <p className="text-gray-600">{box.description}</p>
-        </div>
-
-        {box.items.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <Package className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No items yet</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Add your first item to this box to get started.
-            </p>
-            <div className="mt-6">
-              <Button onClick={() => setIsAddItemOpen(true)} data-testid="button-add-first-item">
-                <Plus className="h-4 w-4 mr-2" />
-                Add your first item
-              </Button>
+          {/* Items List */}
+          <div className="mt-8">
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">Items in this box</h2>
+              <p className="text-gray-600">{box.description}</p>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
+
+            {box.items.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                <Package className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No items yet</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Add your first item to this box to get started.
+                </p>
+                <div className="mt-6">
+                  <Button onClick={() => setIsAddItemOpen(true)} data-testid="button-add-first-item">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add your first item
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
             {box.items.map((item) => (
               <Card key={item.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
@@ -336,10 +342,12 @@ export default function BoxDetail() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      </main>
 
       {/* Modals */}
       <AddItemModal

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -6,8 +7,10 @@ import { Download, Upload, AlertTriangle, Settings as SettingsIcon } from "lucid
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Progress } from "@/components/ui/progress";
+import AppHeader from "@/components/app-header";
 
 export default function Settings() {
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -128,13 +131,18 @@ export default function Settings() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="flex items-center gap-3 mb-8">
-        <SettingsIcon className="h-8 w-8" />
-        <h1 className="text-3xl font-bold">Settings</h1>
-      </div>
-
-      <div className="space-y-8">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <AppHeader 
+        pageTitle="Settings"
+        showSearch={false}
+        showBackButton={true}
+        backButtonText="Dashboard"
+        onBackClick={() => setLocation('/')}
+      />
+      
+      <main className="flex-1">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="space-y-8">
         {/* Backup & Restore Section */}
         <Card>
           <CardHeader>
@@ -263,7 +271,9 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
-      </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Plus, QrCode, Boxes, Settings } from "lucide-react";
+import { useLocation } from "wouter";
+import { Boxes, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import StatsOverview from "@/components/stats-overview";
 import BoxCard from "@/components/box-card";
 import AddBoxModal from "@/components/add-box-modal";
 import QRCodeModal from "@/components/qr-code-modal";
+import AppHeader from "@/components/app-header";
 import { type BoxWithStats } from "@shared/schema";
 
 export default function Dashboard() {
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddBoxOpen, setIsAddBoxOpen] = useState(false);
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
@@ -41,65 +43,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <div className="flex-shrink-0">
-                <Boxes className="text-primary text-2xl" />
-              </div>
-              <h1 className="text-xl font-semibold text-gray-900">Box Management</h1>
-            </div>
-            
-            {/* Search Bar */}
-            <div className="flex-1 max-w-lg mx-4">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-gray-400" />
-                </div>
-                <Input
-                  type="text"
-                  placeholder="Search boxes and items..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  data-testid="input-search"
-                />
-              </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => setIsQRScannerOpen(true)}
-                data-testid="button-qr-scanner"
-                title="Scan QR Code"
-              >
-                <QrCode className="h-4 w-4 mr-2" />
-                Scan QR
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => window.location.href = '/settings'}
-                data-testid="button-settings"
-                title="Settings"
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-              <Button
-                onClick={() => setIsAddBoxOpen(true)}
-                data-testid="button-add-box"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Box
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onAddBoxClick={() => setIsAddBoxOpen(true)}
+        onQRScannerClick={() => setIsQRScannerOpen(true)}
+      />
 
       {/* Main Content */}
       <main className="flex-1">
