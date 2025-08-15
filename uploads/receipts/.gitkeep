@@ -1,0 +1,2 @@
+# This file ensures the receipts directory is preserved in git
+# Receipt files are uploaded here but should not be committed to version control
