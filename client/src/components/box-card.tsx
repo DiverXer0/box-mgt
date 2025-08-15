@@ -69,14 +69,14 @@ export default function BoxCard({ box }: BoxCardProps) {
 
   return (
     <>
-      <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-600 group" data-testid={`card-box-${box.id}`}>
+      <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-white border border-gray-200 hover:border-blue-200 group" data-testid={`card-box-${box.id}`}>
         <CardContent className="p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1" onClick={handleViewDetails}>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg group-hover:text-primary transition-colors" data-testid={`text-box-name-${box.id}`}>
+              <h3 className="font-semibold text-gray-900 text-lg group-hover:text-primary transition-colors" data-testid={`text-box-name-${box.id}`}>
                 {box.name}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1 flex items-center" data-testid={`text-box-location-${box.id}`}>
+              <p className="text-gray-600 text-sm mt-1 flex items-center" data-testid={`text-box-location-${box.id}`}>
                 <MapPin className="h-3 w-3 mr-1" />
                 {box.location}
               </p>
@@ -91,7 +91,7 @@ export default function BoxCard({ box }: BoxCardProps) {
                 }}
                 data-testid={`button-qr-${box.id}`}
               >
-                <QrCode className="h-4 w-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" />
+                <QrCode className="h-4 w-4 text-gray-400 hover:text-gray-600" />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -101,7 +101,7 @@ export default function BoxCard({ box }: BoxCardProps) {
                     onClick={(e) => e.stopPropagation()}
                     data-testid={`button-menu-${box.id}`}
                   >
-                    <MoreVertical className="h-4 w-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" />
+                    <MoreVertical className="h-4 w-4 text-gray-400 hover:text-gray-600" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -148,38 +148,38 @@ export default function BoxCard({ box }: BoxCardProps) {
             </div>
           </div>
           
-          <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2" onClick={handleViewDetails} data-testid={`text-box-description-${box.id}`}>
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2" onClick={handleViewDetails} data-testid={`text-box-description-${box.id}`}>
             {box.description}
           </p>
           
           <div className="flex justify-between items-center text-sm mb-4" onClick={handleViewDetails}>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-500 dark:text-gray-400 flex items-center">
+              <span className="text-gray-500 flex items-center">
                 <Package className="h-3 w-3 mr-1" />
                 <span data-testid={`text-item-count-${box.id}`}>{box.itemCount} items</span>
               </span>
-              <span className="text-green-600 dark:text-green-400 font-medium flex items-center">
+              <span className="text-green-600 font-medium flex items-center">
                 <DollarSign className="h-3 w-3 mr-1" />
                 <span data-testid={`text-total-value-${box.id}`}>${box.totalValue.toFixed(2)}</span>
               </span>
             </div>
-            <span className="text-gray-400 dark:text-gray-500 text-xs" data-testid={`text-last-updated-${box.id}`}>
+            <span className="text-gray-400 text-xs" data-testid={`text-last-updated-${box.id}`}>
               {formatDate(box.createdAt || undefined)}
             </span>
           </div>
           
-          <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+          <div className="pt-4 border-t border-gray-100">
             <div className="flex items-center justify-between">
               <div className="flex -space-x-1">
                 {/* Item type indicators */}
-                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
-                  <Package className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                <div className="w-6 h-6 bg-blue-100 rounded-full border-2 border-white flex items-center justify-center">
+                  <Package className="h-3 w-3 text-blue-600" />
                 </div>
-                <div className="w-6 h-6 bg-green-100 dark:bg-green-900 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
-                  <Package className="h-3 w-3 text-green-600 dark:text-green-400" />
+                <div className="w-6 h-6 bg-green-100 rounded-full border-2 border-white flex items-center justify-center">
+                  <Package className="h-3 w-3 text-green-600" />
                 </div>
-                <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 rounded-full border-2 border-white dark:border-gray-800 flex items-center justify-center">
-                  <Package className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                <div className="w-6 h-6 bg-orange-100 rounded-full border-2 border-white flex items-center justify-center">
+                  <Package className="h-3 w-3 text-orange-600" />
                 </div>
               </div>
               <Button
