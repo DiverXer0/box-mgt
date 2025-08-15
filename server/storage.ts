@@ -1,4 +1,4 @@
-import { type Box, type Item, type InsertBox, type InsertItem, type BoxWithStats, type BoxWithItems, boxes, items } from "@shared/schema";
+import { type Box, type Item, type Location, type InsertBox, type InsertItem, type InsertLocation, type BoxWithStats, type BoxWithItems, boxes, items, locations } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db, initializeDatabase } from "./db";
 import { eq, like, or, sql } from "drizzle-orm";
@@ -20,6 +20,12 @@ export interface IStorage {
 
   // Search
   searchBoxesAndItems(query: string): Promise<{ boxes: BoxWithStats[]; items: Item[] }>;
+
+  // Location operations
+  getLocations(): Promise<Location[]>;
+  createLocation(location: InsertLocation): Promise<Location>;
+  updateLocation(id: string, location: Partial<InsertLocation>): Promise<Location | undefined>;
+  deleteLocation(id: string): Promise<boolean>;
 
   // Stats
   getStats(): Promise<{
@@ -49,6 +55,32 @@ export class DatabaseStorage implements IStorage {
     }
 
     console.log('Initializing sample data...');
+    
+    // Create sample locations
+    const sampleLocations = [
+      {
+        id: "loc-basement-a1",
+        name: "Basement Shelf A-1",
+        description: "First shelf in basement storage area A"
+      },
+      {
+        id: "loc-garage-wall",
+        name: "Garage Wall Mount", 
+        description: "Wall mounted storage in garage"
+      },
+      {
+        id: "loc-office-closet",
+        name: "Office Closet",
+        description: "Storage closet in home office"
+      },
+      {
+        id: "loc-attic-north",
+        name: "Attic North Side",
+        description: "North side of attic storage area"
+      }
+    ];
+
+    await db.insert(locations).values(sampleLocations);
     
     // Create sample boxes
     const sampleBoxes = [
@@ -235,6 +267,45 @@ export class DatabaseStorage implements IStorage {
     );
 
     return { boxes: boxesWithStats, items: searchItems };
+  }
+
+  // Location operations
+  async getLocations(): Promise<Location[]> {
+    return await db.select().from(locations);
+  }
+
+  async createLocation(location: InsertLocation): Promise<Location> {
+    const id = randomUUID();
+    const newLocation = { 
+      id, 
+      name: location.name,
+      description: location.description || null,
+      createdAt: new Date().toISOString()
+    };
+    
+    await db.insert(locations).values(newLocation);
+    return newLocation;
+  }
+
+  async updateLocation(id: string, locationData: Partial<InsertLocation>): Promise<Location | undefined> {
+    const [updatedLocation] = await db
+      .update(locations)
+      .set(locationData)
+      .where(eq(locations.id, id))
+      .returning();
+    
+    return updatedLocation;
+  }
+
+  async deleteLocation(id: string): Promise<boolean> {
+    // Check if location is in use by any boxes
+    const boxesUsingLocation = await db.select().from(boxes).where(eq(boxes.location, id));
+    if (boxesUsingLocation.length > 0) {
+      throw new Error("Cannot delete location: it is currently being used by one or more boxes");
+    }
+    
+    const result = await db.delete(locations).where(eq(locations.id, id));
+    return result.changes > 0;
   }
 
   async getStats(): Promise<{

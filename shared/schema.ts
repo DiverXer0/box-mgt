@@ -12,6 +12,13 @@ export const boxes = sqliteTable("boxes", {
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 });
 
+export const locations = sqliteTable("locations", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
+});
+
 export const items = sqliteTable("items", {
   id: text("id").primaryKey(),
   boxId: text("box_id").notNull().references(() => boxes.id, { onDelete: "cascade" }),
@@ -44,10 +51,17 @@ export const insertItemSchema = createInsertSchema(items).omit({
   createdAt: true,
 });
 
+export const insertLocationSchema = createInsertSchema(locations).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertBox = z.infer<typeof insertBoxSchema>;
 export type InsertItem = z.infer<typeof insertItemSchema>;
+export type InsertLocation = z.infer<typeof insertLocationSchema>;
 export type Box = typeof boxes.$inferSelect;
 export type Item = typeof items.$inferSelect;
+export type Location = typeof locations.$inferSelect;
 
 export interface BoxWithStats extends Box {
   itemCount: number;

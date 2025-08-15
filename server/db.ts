@@ -49,6 +49,15 @@ export function initializeDatabase() {
     `);
 
     sqlite.exec(`
+      CREATE TABLE IF NOT EXISTS locations (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        description TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
+    `);
+
+    sqlite.exec(`
       CREATE TABLE IF NOT EXISTS items (
         id TEXT PRIMARY KEY,
         box_id TEXT NOT NULL,

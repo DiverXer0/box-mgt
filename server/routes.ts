@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertBoxSchema, insertItemSchema } from "@shared/schema";
+import { insertBoxSchema, insertItemSchema, insertLocationSchema } from "@shared/schema";
 import { reconnectDatabase } from "./db";
 import multer from "multer";
 import path from "path";
@@ -274,6 +274,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(results);
     } catch (error) {
       res.status(500).json({ message: "Search failed" });
+    }
+  });
+
+  // Location management routes
+  app.get("/api/locations", async (req, res) => {
+    try {
+      const locations = await storage.getLocations();
+      res.json(locations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch locations" });
+    }
+  });
+
+  app.post("/api/locations", async (req, res) => {
+    try {
+      const locationData = insertLocationSchema.parse(req.body);
+      const location = await storage.createLocation(locationData);
+      res.status(201).json(location);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to create location" });
+    }
+  });
+
+  app.put("/api/locations/:id", async (req, res) => {
+    try {
+      const locationData = insertLocationSchema.parse(req.body);
+      const location = await storage.updateLocation(req.params.id, locationData);
+      if (!location) {
+        return res.status(404).json({ error: "Location not found" });
+      }
+      res.json(location);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to update location" });
+    }
+  });
+
+  app.delete("/api/locations/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteLocation(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Location not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ error: "Failed to delete location" });
     }
   });
 
