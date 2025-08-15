@@ -99,7 +99,10 @@ export default function Settings() {
             description: response.message || "Your data has been successfully restored. The page will reload.",
           });
           // Reload the page to show restored data
-          setTimeout(() => window.location.reload(), 2000);
+          setTimeout(() => {
+            window.location.href = '/';  // Go back to dashboard
+            setTimeout(() => window.location.reload(), 100);
+          }, 2000);
         } else {
           throw new Error(`Restore failed: ${xhr.statusText}`);
         }

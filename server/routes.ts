@@ -295,17 +295,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
+      archive.on('warning', (err) => {
+        console.warn('Archive warning:', err);
+      });
+
+      archive.on('progress', (progress) => {
+        console.log('Archive progress:', progress);
+      });
+
       archive.pipe(res);
 
       // Add database file
       const dbPath = path.join(process.cwd(), 'data', 'boxes.db');
+      console.log(`Backup - DB path: ${dbPath}`);
+      console.log(`Backup - DB exists: ${fs.existsSync(dbPath)}`);
       if (fs.existsSync(dbPath)) {
+        const dbSize = fs.statSync(dbPath).size;
+        console.log(`Backup - DB size: ${dbSize} bytes`);
         archive.file(dbPath, { name: 'data/boxes.db' });
+      } else {
+        console.error('Database file not found during backup!');
       }
 
       // Add uploads directory
       const uploadsPath = path.join(process.cwd(), 'uploads');
+      console.log(`Backup - Uploads path: ${uploadsPath}`);
+      console.log(`Backup - Uploads exists: ${fs.existsSync(uploadsPath)}`);
       if (fs.existsSync(uploadsPath)) {
+        console.log(`Backup - Uploads contents:`, fs.readdirSync(uploadsPath));
         archive.directory(uploadsPath, 'uploads');
       }
 
@@ -317,7 +334,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       archive.append(JSON.stringify(metadata, null, 2), { name: 'backup-metadata.json' });
 
+      console.log('Finalizing archive...');
       await archive.finalize();
+      console.log('Archive finalized');
     } catch (error) {
       console.error('Backup error:', error);
       if (!res.headersSent) {
@@ -392,6 +411,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
         console.log('Restoring backup created:', metadata.created);
       }
+      
+      // Debug: List extracted contents
+      console.log('Extracted contents:', fs.readdirSync(tempExtractPath));
+      if (fs.existsSync(path.join(tempExtractPath, 'data'))) {
+        console.log('Data directory contents:', fs.readdirSync(path.join(tempExtractPath, 'data')));
+      }
 
       // Restore database files (including WAL files)
       const dbPath = path.join(process.cwd(), 'data', 'boxes.db');
@@ -416,12 +441,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Copy the backup database file
+        console.log(`Copying database from ${backupDbPath} to ${dbPath}`);
+        console.log(`Backup DB exists: ${fs.existsSync(backupDbPath)}`);
+        console.log(`Backup DB size: ${fs.existsSync(backupDbPath) ? fs.statSync(backupDbPath).size : 'N/A'} bytes`);
+        
         fs.copyFileSync(backupDbPath, dbPath);
+        
+        console.log(`New DB size: ${fs.statSync(dbPath).size} bytes`);
         
         // Reconnect to the database with new data
         reconnectDatabase();
         
-        console.log('Database restored and reconnected successfully');
+        // Reinitialize storage to use the new database connection
+        storage.reinitialize();
+        
+        console.log('Database restored, reconnected, and storage reinitialized successfully');
       }
 
       // Restore uploads directory

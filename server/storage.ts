@@ -36,6 +36,11 @@ export class DatabaseStorage implements IStorage {
     this.initializeSampleData();
   }
 
+  // Reinitialize after database restore
+  public reinitialize() {
+    initializeDatabase();
+  }
+
   private async initializeSampleData() {
     // Check if we already have data
     const existingBoxes = await db.select().from(boxes).limit(1);
