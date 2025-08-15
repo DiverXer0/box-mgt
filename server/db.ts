@@ -62,6 +62,27 @@ export function initializeDatabase() {
       );
     `);
 
+    sqlite.exec(`
+      CREATE TABLE IF NOT EXISTS locations (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        description TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      );
+    `);
+
+    sqlite.exec(`
+      CREATE TABLE IF NOT EXISTS activity_logs (
+        id TEXT PRIMARY KEY,
+        action TEXT NOT NULL,
+        entity_type TEXT NOT NULL,
+        entity_id TEXT,
+        entity_name TEXT,
+        details TEXT,
+        timestamp TEXT DEFAULT (datetime('now'))
+      );
+    `);
+
     console.log('Database tables initialized successfully');
   } catch (error) {
     console.error('Failed to initialize database:', error);

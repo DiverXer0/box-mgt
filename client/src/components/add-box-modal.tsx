@@ -129,7 +129,7 @@ export default function AddBoxModal({ open, onOpenChange, editingBox }: AddBoxMo
                     </FormControl>
                     <SelectContent>
                       {locations.length === 0 ? (
-                        <SelectItem value="" disabled>
+                        <SelectItem value="no-locations" disabled>
                           No locations available - create one in Settings
                         </SelectItem>
                       ) : (

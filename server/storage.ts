@@ -61,7 +61,7 @@ export class DatabaseStorage implements IStorage {
 
     console.log('Initializing sample data...');
     
-    // Create sample locations
+    // Create sample locations (only include fields that exist in schema)
     const sampleLocations = [
       { id: "location-kitchen", name: "Kitchen", description: "Kitchen cabinets and pantry" },
       { id: "location-garage", name: "Garage", description: "Garage storage area" },
@@ -70,7 +70,11 @@ export class DatabaseStorage implements IStorage {
       { id: "location-attic", name: "Attic", description: "Attic storage space" },
     ];
     
-    await db.insert(locations).values(sampleLocations);
+    try {
+      await db.insert(locations).values(sampleLocations);
+    } catch (error) {
+      console.log('Sample locations already exist or failed to create:', error);
+    }
     
     // Create sample boxes
     const sampleBoxes = [
