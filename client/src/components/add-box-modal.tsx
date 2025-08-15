@@ -118,69 +118,33 @@ export default function AddBoxModal({ open, onOpenChange, editingBox }: AddBoxMo
             <FormField
               control={form.control}
               name="location"
-              render={({ field }) => {
-                const isCustomLocation = field.value && !locations.some(loc => loc.name === field.value);
-                const displayValue = isCustomLocation ? "custom" : field.value;
-                
-                return (
-                  <FormItem>
-                    <FormLabel>Location</FormLabel>
-                    <Select 
-                      onValueChange={(value) => {
-                        if (value === "custom") {
-                          // Don't change the field value yet, let user type custom location
-                          return;
-                        }
-                        field.onChange(value);
-                      }} 
-                      value={displayValue}
-                    >
-                      <FormControl>
-                        <SelectTrigger data-testid="select-box-location">
-                          <SelectValue placeholder="Select a location" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {locations.length === 0 ? (
-                          <SelectItem value="no-locations" disabled>
-                            No locations available - create one in Settings
-                          </SelectItem>
-                        ) : (
-                          locations.map((location) => (
-                            <SelectItem key={location.id} value={location.name}>
-                              {location.name}
-                            </SelectItem>
-                          ))
-                        )}
-                        <SelectItem value="custom">Custom Location</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
-            />
-            
-            {(form.watch("location") === "custom" || (form.watch("location") && !locations.some(loc => loc.name === form.watch("location")))) && (
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Custom Location</FormLabel>
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <Input
-                        placeholder="Enter custom location"
-                        value={field.value}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        data-testid="input-custom-location"
-                      />
+                      <SelectTrigger data-testid="select-box-location">
+                        <SelectValue placeholder="Select a location" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+                    <SelectContent>
+                      {locations.length === 0 ? (
+                        <SelectItem value="no-locations" disabled>
+                          No locations available - create one in Settings
+                        </SelectItem>
+                      ) : (
+                        locations.map((location) => (
+                          <SelectItem key={location.id} value={location.name}>
+                            {location.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
             <FormField
               control={form.control}

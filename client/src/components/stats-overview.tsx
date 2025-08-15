@@ -19,15 +19,15 @@ export default function StatsOverview() {
       <div className="mb-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
+            <Card key={i} className="animate-pulse bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-gray-200 rounded"></div>
+                    <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded"></div>
                   </div>
                   <div className="ml-4 flex-1">
-                    <div className="h-3 bg-gray-200 rounded w-20 mb-2"></div>
-                    <div className="h-6 bg-gray-200 rounded w-16"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-20 mb-2"></div>
+                    <div className="h-6 bg-gray-200 dark:bg-gray-600 rounded w-16"></div>
                   </div>
                 </div>
               </CardContent>
@@ -77,17 +77,17 @@ export default function StatsOverview() {
         {statItems.map((stat, index) => (
           <Card 
             key={stat.label} 
-            className="hover-lift animate-fade-in bg-gradient-to-br from-white to-gray-50 border-gray-200"
+            className="transition-all duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-md"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="flex-shrink-0 p-3 rounded-full bg-gradient-to-br from-blue-50 to-blue-100">
+                <div className="flex-shrink-0 p-3 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800">
                   <stat.icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1" data-testid={stat.testId}>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">{stat.label}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1" data-testid={stat.testId}>
                     {stat.value}
                   </p>
                 </div>
