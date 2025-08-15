@@ -74,16 +74,20 @@ export default function StatsOverview() {
   return (
     <div className="mb-8">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {statItems.map((stat) => (
-          <Card key={stat.label}>
+        {statItems.map((stat, index) => (
+          <Card 
+            key={stat.label} 
+            className="hover-lift animate-fade-in bg-gradient-to-br from-white to-gray-50 border-gray-200"
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                <div className="flex-shrink-0 p-3 rounded-full bg-gradient-to-br from-blue-50 to-blue-100">
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                  <p className="text-2xl font-semibold text-gray-900" data-testid={stat.testId}>
+                  <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">{stat.label}</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1" data-testid={stat.testId}>
                     {stat.value}
                   </p>
                 </div>

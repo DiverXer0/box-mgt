@@ -247,14 +247,18 @@ export default function BoxDetail() {
               </div>
             ) : (
               <div className="space-y-4">
-            {box.items.map((item) => (
-              <Card key={item.id} className="hover:shadow-md transition-shadow">
+            {box.items.map((item, index) => (
+              <Card 
+                key={item.id} 
+                className="hover-lift animate-fade-in border-gray-200"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Package className="h-5 w-5 text-blue-600" />
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center shadow-sm">
+                          <Package className="h-6 w-6 text-blue-600" />
                         </div>
                         <div>
                           <h3 className="font-medium text-gray-900" data-testid={`text-item-name-${item.id}`}>

@@ -113,8 +113,14 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {sortedBoxes.map((box) => (
-                  <BoxCard key={box.id} box={box} />
+                {sortedBoxes.map((box, index) => (
+                  <div
+                    key={box.id}
+                    className="animate-slide-up"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <BoxCard box={box} />
+                  </div>
                 ))}
               </div>
             )}
