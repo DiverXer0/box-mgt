@@ -42,7 +42,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       <AppHeader
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -59,12 +59,12 @@ export default function Dashboard() {
           {/* Boxes Grid */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {searchQuery ? `Search Results (${displayBoxes.length})` : "Storage Boxes"}
               </h2>
               <div className="flex items-center space-x-3">
                 <select
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value)}
                   data-testid="select-sort"
@@ -80,13 +80,13 @@ export default function Dashboard() {
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
-                    <div className="h-16 bg-gray-200 rounded mb-4"></div>
+                  <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
+                    <div className="h-16 bg-gray-200 dark:bg-gray-600 rounded mb-4"></div>
                     <div className="flex justify-between">
-                      <div className="h-3 bg-gray-200 rounded w-1/4"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-1/4"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-1/4"></div>
                     </div>
                   </div>
                 ))}
@@ -94,10 +94,10 @@ export default function Dashboard() {
             ) : sortedBoxes.length === 0 ? (
               <div className="text-center py-12">
                 <Boxes className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
                   {searchQuery ? "No boxes found" : "No boxes yet"}
                 </h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   {searchQuery
                     ? "Try adjusting your search terms"
                     : "Get started by creating your first storage box"}
