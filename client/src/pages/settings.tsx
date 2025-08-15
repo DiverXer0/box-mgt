@@ -48,6 +48,15 @@ export default function Settings() {
     },
   });
 
+  const handleDeleteLocation = (id: string) => {
+    deleteLocationMutation.mutate(id);
+  };
+
+  const handleEditLocation = (location: Location) => {
+    setEditingLocation(location);
+    setIsLocationModalOpen(true);
+  };
+
   const handleFullBackup = async () => {
     try {
       setIsBackingUp(true);
@@ -116,38 +125,35 @@ export default function Settings() {
       formData.append('backup', file);
 
       const xhr = new XMLHttpRequest();
-      
-      // Track upload progress
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = (e.loaded / e.total) * 100;
-          setUploadProgress(percentComplete);
-        }
-      });
 
-      // Handle response
-      xhr.addEventListener('load', () => {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(progress);
+        }
+      };
+
+      xhr.onload = () => {
         if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText);
           toast({
             title: "Restore Complete",
-            description: response.message || "Your data has been successfully restored. The page will reload.",
+            description: "Your data has been successfully restored. The page will refresh to show the restored data.",
           });
-          // Reload the page to show restored data
+          // Refresh the page to show restored data
           setTimeout(() => {
-            window.location.href = '/';  // Go back to dashboard
-            setTimeout(() => window.location.reload(), 100);
+            window.location.reload();
           }, 2000);
         } else {
-          throw new Error(`Restore failed: ${xhr.statusText}`);
+          const errorText = xhr.responseText || xhr.statusText;
+          throw new Error(`Restore failed: ${errorText}`);
         }
-      });
+      };
 
-      xhr.addEventListener('error', () => {
+      xhr.onerror = () => {
         throw new Error('Network error during restore');
-      });
+      };
 
-      xhr.open('POST', '/api/restore/full');
+      xhr.open('POST', '/api/backup/restore');
       xhr.send(formData);
 
     } catch (error) {
@@ -163,18 +169,120 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <AppHeader 
-        pageTitle="Settings"
-        showSearch={false}
-        showBackButton={true}
-        backButtonText="Dashboard"
-        onBackClick={() => setLocation('/')}
+        title="Settings"
+        showBackButton
+        onBack={() => setLocation("/")}
+        icon={SettingsIcon}
       />
       
       <main className="flex-1">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="space-y-8">
+        {/* Location Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <MapPin className="h-5 w-5" />
+              <span>Storage Locations</span>
+            </CardTitle>
+            <CardDescription>
+              Manage storage locations for organizing your boxes. Locations help you keep track of where your physical boxes are stored.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Storage Locations</span>
+              <Button
+                onClick={() => {
+                  setEditingLocation(undefined);
+                  setIsLocationModalOpen(true);
+                }}
+                size="sm"
+                data-testid="button-add-location"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Location
+              </Button>
+            </div>
+
+            {locationsLoading ? (
+              <div className="space-y-2">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-12 bg-gray-100 rounded-md animate-pulse" />
+                ))}
+              </div>
+            ) : locations && locations.length > 0 ? (
+              <div className="space-y-2">
+                {locations.map((location) => (
+                  <div
+                    key={location.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                    data-testid={`location-item-${location.id}`}
+                  >
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900" data-testid={`text-location-name-${location.id}`}>
+                        {location.name}
+                      </h4>
+                      {location.description && (
+                        <p className="text-sm text-gray-600" data-testid={`text-location-description-${location.id}`}>
+                          {location.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditLocation(location)}
+                        data-testid={`button-edit-location-${location.id}`}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            data-testid={`button-delete-location-${location.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Location</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{location.name}"? This action cannot be undone.
+                              Note: You cannot delete locations that are currently used by boxes.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteLocation(location.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No storage locations configured</p>
+                <p className="text-sm">Add your first location to get started</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Backup & Restore Section */}
         <Card>
           <CardHeader>
@@ -301,127 +409,6 @@ export default function Settings() {
                 <span className="ml-2">ZIP Archive</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Location Management */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <MapPin className="h-5 w-5" />
-              <span>Location Management</span>
-            </CardTitle>
-            <CardDescription>
-              Manage storage locations for organizing your boxes. Locations help you keep track of where your physical boxes are stored.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">Storage Locations</span>
-              <Button
-                onClick={() => {
-                  setEditingLocation(undefined);
-                  setIsLocationModalOpen(true);
-                }}
-                size="sm"
-                data-testid="button-add-location"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Location
-              </Button>
-            </div>
-
-            {locationsLoading ? (
-              <div className="space-y-2">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-12 bg-gray-100 rounded-md animate-pulse" />
-                ))}
-              </div>
-            ) : locations && locations.length > 0 ? (
-              <div className="space-y-2">
-                {locations.map((location) => (
-                  <div
-                    key={location.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
-                    data-testid={`location-item-${location.id}`}
-                  >
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900" data-testid={`text-location-name-${location.id}`}>
-                        {location.name}
-                      </h4>
-                      {location.description && (
-                        <p className="text-sm text-gray-600" data-testid={`text-location-description-${location.id}`}>
-                          {location.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingLocation(location);
-                          setIsLocationModalOpen(true);
-                        }}
-                        data-testid={`button-edit-location-${location.id}`}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            data-testid={`button-delete-location-${location.id}`}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Location</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete "{location.name}"? This action cannot be undone.
-                              Note: You cannot delete locations that are currently being used by boxes.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteLocationMutation.mutate(location.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <MapPin className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No locations yet</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Add your first storage location to better organize your boxes.
-                </p>
-                <div className="mt-6">
-                  <Button
-                    onClick={() => {
-                      setEditingLocation(undefined);
-                      setIsLocationModalOpen(true);
-                    }}
-                    size="sm"
-                    data-testid="button-add-first-location"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add your first location
-                  </Button>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
           </div>
